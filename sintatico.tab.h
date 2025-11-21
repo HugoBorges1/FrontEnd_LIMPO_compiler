@@ -54,41 +54,57 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    NUMBER = 258,                  /* NUMBER  */
-    IDENT = 259,                   /* IDENT  */
-    READ_S = 260,                  /* READ_S  */
-    READ_E = 261,                  /* READ_E  */
-    SHOW_E = 262,                  /* SHOW_E  */
-    SHOW_S = 263,                  /* SHOW_S  */
-    DECL_IT = 264,                 /* DECL_IT  */
-    DECL_FT = 265,                 /* DECL_FT  */
-    ICR = 266,                     /* ICR  */
-    CMP_AND = 267,                 /* CMP_AND  */
-    CMP_OR = 268,                  /* CMP_OR  */
-    CMP_MEI = 269,                 /* CMP_MEI  */
-    CMP_MAI = 270,                 /* CMP_MAI  */
-    DECL_ST = 271,                 /* DECL_ST  */
-    IF_S = 272,                    /* IF_S  */
-    IF_E = 273,                    /* IF_E  */
-    ELSE_S = 274,                  /* ELSE_S  */
-    ELSE_E = 275,                  /* ELSE_E  */
-    LOOP_S = 276,                  /* LOOP_S  */
-    LOOP_E = 277,                  /* LOOP_E  */
-    LOOP_P = 278,                  /* LOOP_P  */
-    CMP_MAQ = 279,                 /* CMP_MAQ  */
-    CMP_DIF = 280,                 /* CMP_DIF  */
-    CMP_MEQ = 281,                 /* CMP_MEQ  */
-    CMP_IG = 282,                  /* CMP_IG  */
-    DECL_BL = 283,                 /* DECL_BL  */
-    BOOL_F = 284,                  /* BOOL_F  */
-    BOOL_T = 285                   /* BOOL_T  */
+    TOK_PRINT = 258,               /* TOK_PRINT  */
+    TOK_INT = 259,                 /* TOK_INT  */
+    TOK_FLT = 260,                 /* TOK_FLT  */
+    TOK_IDENT = 261,               /* TOK_IDENT  */
+    NUMBER = 262,                  /* NUMBER  */
+    IDENT = 263,                   /* IDENT  */
+    READ_S = 264,                  /* READ_S  */
+    READ_E = 265,                  /* READ_E  */
+    SHOW_E = 266,                  /* SHOW_E  */
+    SHOW_S = 267,                  /* SHOW_S  */
+    DECL_IT = 268,                 /* DECL_IT  */
+    DECL_FT = 269,                 /* DECL_FT  */
+    ICR = 270,                     /* ICR  */
+    CMP_AND = 271,                 /* CMP_AND  */
+    CMP_OR = 272,                  /* CMP_OR  */
+    CMP_MEI = 273,                 /* CMP_MEI  */
+    CMP_MAI = 274,                 /* CMP_MAI  */
+    DECL_ST = 275,                 /* DECL_ST  */
+    IF_S = 276,                    /* IF_S  */
+    IF_E = 277,                    /* IF_E  */
+    ELSE_S = 278,                  /* ELSE_S  */
+    ELSE_E = 279,                  /* ELSE_E  */
+    LOOP_S = 280,                  /* LOOP_S  */
+    LOOP_E = 281,                  /* LOOP_E  */
+    LOOP_P = 282,                  /* LOOP_P  */
+    CMP_MAQ = 283,                 /* CMP_MAQ  */
+    CMP_DIF = 284,                 /* CMP_DIF  */
+    CMP_MEQ = 285,                 /* CMP_MEQ  */
+    CMP_IG = 286,                  /* CMP_IG  */
+    DECL_BL = 287,                 /* DECL_BL  */
+    BOOL_F = 288,                  /* BOOL_F  */
+    BOOL_T = 289                   /* BOOL_T  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+union YYSTYPE
+{
+#line 23 "sintatico.y"
+
+     int integer;
+     float flt;
+     char *name;
+     Node *node;
+
+#line 105 "sintatico.tab.h"
+
+};
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif

@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include "nodes.h"
 int yyerror(const char *s);
 int yylex(void);
 int errorc = 0;
@@ -7,10 +8,24 @@ int errorc = 0;
 
 %define parse.error verbose 
 
+%token TOK_PRINT 
+%token<integer> TOK_INT 
+%token<flt> TOK_FLT 
+%token<name> TOK_IDENT
+
 %token NUMBER IDENT READ_S READ_E SHOW_E SHOW_S DECL_IT DECL_FT ICR CMP_AND CMP_OR CMP_MEI CMP_MAI
 %token DECL_ST IF_S IF_E ELSE_S ELSE_E LOOP_S LOOP_E LOOP_P CMP_MAQ CMP_DIF CMP_MEQ CMP_IG DECL_BL BOOL_F BOOL_T
 
+%type<node> factor term expr stmt stmts prog
+
 %start prog
+
+%union {
+     int integer;
+     float flt;
+     char *name;
+     Node *node;
+} 
 
 %%
 
