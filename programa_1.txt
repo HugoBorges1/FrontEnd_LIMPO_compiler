@@ -1,0 +1,12 @@
+it vetor_media ]3[
+ft media 
+it total
+
+LO 3 : it a++ OP |
+RE { it @ vetor_media  ]a[ } AD
+	total = total + vetor_media ]a[
+|
+
+media = total/3
+
+SH {Media calculada %media\} OW
