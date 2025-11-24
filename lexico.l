@@ -4,10 +4,11 @@
 class Node;
 
 #include "sintatico.tab.h" 
-int yyerror(const char *s);
+int yerror(const char *s);
 
 char *build_file_name;
-int errorcount=0;
+int errorcount = 0;
+
 %}
 
 %option yylineno
@@ -23,11 +24,15 @@ int errorcount=0;
 ")"                         { return ')'; }
 "{"                         { return '{'; }
 "}"                         { return '}'; }
+"["                         { return '['; }
+"]"                         { return ']'; }
 "|"                         { return '|'; }
 "%"                         { return '%'; }
 "\\"                        { return '\\'; }
 "@"                         { return '@'; }
-":"                         { return ':'; }       
+":"                         { return ':'; }
+";"                         { return ';'; } 
+"="                         { return '='; }       
 
 "++"                        { return ICR; }
 "RE"                        { return READ_S; }
@@ -68,12 +73,14 @@ int errorcount=0;
     yylval.flt = atof(yytext);
     return FLOAT; 
 }
+
 [a-zA-Z_][a-zA-Z_0-9]*  { 
     yylval.name = strndup(yytext, yyleng);
     return IDENT; 
 }
 
-.                           { return yytext[0]; }
+
+.                       { printf("Caractere não presente no alfabeto %c\n", yytext[0] ); }
 
 %%
 

@@ -1,301 +1,256 @@
 %{
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
 #include "nodes.h"
-
 int yyerror(const char *s);
 int yylex(void);
-int errorc = 0;
 %}
 
 %define parse.error verbose 
 
-/* Definicao da Union atualizada com boolean */
-%union {
-     int integer;
-     float flt;
-     int boolean; /* Adicionado para suportar valores lógicos (0 ou 1) */
-     char *name;
-     Node *node;
-}
-
-/* Tokens com valores tipados */
+%token READ_S READ_E SHOW_E SHOW_S DECL_IT DECL_FT ICR CMP_AND CMP_OR CMP_MEI CMP_MAI DECL_ST 
+%token IF_S IF_E ELSE_S ELSE_E LOOP_S LOOP_E LOOP_P CMP_MAQ CMP_DIF CMP_MEQ CMP_IG DECL_BL BOOL_F BOOL_T
 %token<integer> INTEGER
-%token<flt> FLOAT 
+%token<flt> FLOAT
 %token<name> IDENT
-/* Tokens booleanos agora podem ter valor semântico se desejado, 
-   mas como são palavras reservadas fixas, podemos tratar direto na regra ou no léxico.
-   Aqui vou manter simples, tratando nas regras gramaticais. */
 
-/* Tokens de controle */
-%token READ_S READ_E SHOW_E SHOW_S DECL_IT DECL_FT ICR 
-%token CMP_AND CMP_OR CMP_MEI CMP_MAI
-%token DECL_ST IF_S IF_E ELSE_S ELSE_E LOOP_S LOOP_E LOOP_P 
-%token CMP_MAQ CMP_DIF CMP_MEQ CMP_IG DECL_BL BOOL_F BOOL_T
-
-/* Tipos de retorno (Nodes) para os não-terminais */
-%type<node> prog stmts stmt decl atrib loop if show read arit
-%type<node> cond exprlog termlog faclog comp perexpr cmpl val
-%type<node> rdexpr tpvar scont termst mistl string varshow atstring
-%type<node> expr term factor comblock
+%type<node> stmts stmt atrib arit expr term factor prog atstring decl if show read loop comblock cond exprlog termlog faclog perexpr
 
 %start prog
 
+%union {
+     int integer;
+     float flt;
+     char *name;
+     Node *node;
+} 
+
 %%
 
-/* --- Raiz do Programa --- */
-prog : stmts                    
-     { 
-        if (errorc > 0) {
-            // Se houver erro, não imprime a árvore
-        } else {
-            // Cria a raiz e imprime a AST
-            Program *p = new Program($1);
-            p->printAST(); 
-        }
-     }   
-     ;                             
+prog : stmts {    
+     Program pg($stmts);
+     pg.printAST();
 
-/* --- Lista de Comandos --- */
-stmts : stmt stmts 
-      { 
-          // Insere o stmt no início da lista de filhos do bloco stmts
-          $2->getChildren().insert($2->getChildren().begin(), $1); 
-          $$ = $2; 
-      }
-      | stmt   
-      { 
-          // Cria um novo bloco e adiciona o primeiro stmt
-          $$ = new Block(); 
-          $$->append($1); 
-      }
-      ;
+     SemanticVarDecl vd;
+     vd.check(&pg);
+     vd.printFoundVars();
+}                          
 
-stmt : atrib { $$ = $1; }
-     | if    { $$ = $1; }
-     | show  { $$ = $1; }
-     | read  { $$ = $1; }
-     | loop  { $$ = $1; }
-     | arit  { $$ = $1; }
-     | decl  { $$ = $1; }
+stmts : stmts[ss] stmt {
+     $ss->append($stmt);
+     $$ = $ss;
+}
+
+stmts : stmt {
+     $$ = new Stmts($stmt);
+}
+
+stmt : atrib
+     | if
+     | show
+     | read
+     | loop
+     | arit
+     | decl
      ;
 
-/* --- Declarações --- */
-decl : DECL_IT IDENT ']' INTEGER '[' { $$ = new VectorDecl("int", $2, $4); }
-     | DECL_ST IDENT ']' INTEGER '[' { $$ = new VectorDecl("string", $2, $4); }
-     | DECL_FT IDENT ']' INTEGER '[' { $$ = new VectorDecl("float", $2, $4); }
-     | DECL_BL IDENT ']' INTEGER '[' { $$ = new VectorDecl("bool", $2, $4); }
-     | DECL_ST IDENT                 { $$ = new VarDecl("string", $2); }
-     | DECL_IT IDENT                 { $$ = new VarDecl("int", $2); }
-     | DECL_FT IDENT                 { $$ = new VarDecl("float", $2); }
-     | DECL_BL IDENT                 { $$ = new VarDecl("bool", $2); }
-     ;
+decl : DECL_IT IDENT[name] ']' INTEGER[size] '[' {
+     $$ = new VectorDecl($name, $size, "int");
+}
 
-/* --- Atribuições --- */
-atrib : IDENT '=' arit                  { $$ = new Store($1, $3); }
-      | IDENT ']' atstring '[' '=' arit { $$ = new VectorStore($1, $3, $6); }
-      
-      /* Atribuições de booleanos usando os tokens específicos */
-      | IDENT '=' BOOL_T                { $$ = new Store($1, new ConstBool(true)); }
-      | IDENT '=' BOOL_F                { $$ = new Store($1, new ConstBool(false)); }
-      | IDENT ']'atstring'[' '=' BOOL_T { $$ = new VectorStore($1, $3, new ConstBool(true)); }
-      | IDENT ']'atstring'[' '=' BOOL_F { $$ = new VectorStore($1, $3, new ConstBool(false)); }
-      ;
+decl : DECL_ST IDENT[name] ']' INTEGER[size] '[' {
+     $$ = new VectorDecl($name, $size, "string");
+}
 
-/* --- Loops --- */
+decl : DECL_FT IDENT[name] ']' INTEGER[size] '[' {
+     $$ = new VectorDecl($name, $size, "float");
+}
+
+decl : DECL_BL IDENT[name] ']' INTEGER[size] '[' {
+     $$ = new VectorDecl($name, $size, "boolean");
+}
+
+decl : DECL_IT IDENT[name] {
+     $$ = new VarDecl($name, "int");
+}
+
+decl : DECL_FT IDENT[name] {
+     $$ = new VarDecl($name, "float");
+}
+
+decl : DECL_BL IDENT[name] {
+     $$ = new VarDecl($name, "bool");
+}
+
+decl : DECL_ST IDENT[name] {
+     $$ = new VarDecl($name, "string");
+}
+
+atrib : IDENT[id] '=' arit[at] {
+     $$ = new Store($id, $at);
+}
+
+atrib : IDENT[id] '=' BOOL_T {
+     $$ = new Store($id,  new ConstBoolean(true));
+}
+
+atrib : IDENT[id] '=' BOOL_F {
+     $$ = new Store($id,  new ConstBoolean(false));
+}
+
+atrib : IDENT[id] ']'atstring[ats]'[' '=' arit[at] {
+     $$ = new StoreVector($id, $ats, $at);
+}
+
+atrib : IDENT[id] ']'atstring[ats]'[' '=' BOOL_T{
+     $$ = new StoreVector($id, $ats, new ConstBoolean(true));
+}
+
+atrib : IDENT[id] ']'atstring[ats]'[' '=' BOOL_F{
+     $$ = new StoreVector($id, $ats, new ConstBoolean(false));
+}   
+
 loop : LOOP_S INTEGER ':' DECL_IT IDENT ICR LOOP_E '|' comblock '|'
-     { 
-        // Loop definido (FOR): LO 10 : it a++ OP
-        $$ = new ForLoop($2, $5, $9);
-     }
      | LOOP_S cond LOOP_E '|' comblock '|'
-     { 
-        // Loop condicional (WHILE)
-        $$ = new WhileLoop($2, $5);
-     }
      | LOOP_S cond LOOP_E '|' comblock LOOP_P '|'
-     { 
-        // Loop condicional com Break (PARE)
-        $5->append(new BreakNode());
-        $$ = new WhileLoop($2, $5);
-     }
      ;
 
-/* --- Condicional IF --- */
 if : IF_S cond IF_E '|' comblock '|'
-     { $$ = new IfNode($2, $5); }
    | IF_S cond IF_E '|' comblock '|' ELSE_S comblock ELSE_E
-     { $$ = new IfNode($2, $5, $8); }
    ;
 
-/* --- Expressões Lógicas --- */
-cond : exprlog { $$ = $1; }
+cond : exprlog
      ;
 
-exprlog : termlog { $$ = $1; }
-        | exprlog CMP_OR termlog { $$ = new BinaryOp($1, "OR", $3); }
+exprlog : termlog
+        | exprlog CMP_OR termlog
         ;
 
-termlog : faclog { $$ = $1; }
-        | termlog CMP_AND faclog { $$ = new BinaryOp($1, "AND", $3); }
+termlog : faclog
+        | termlog CMP_AND faclog
         ;
 
-faclog : perexpr { $$ = $1; }
-       | comp    { $$ = $1; }
+faclog : perexpr
+       | comp
        ;
 
-comp : perexpr cmpl perexpr { $$ = new BinaryOp($1, $2->astLabel(), $3); }
+comp : perexpr cmpl perexpr
      ;
 
-perexpr : val { $$ = $1; }
-        | '(' exprlog ')' { $$ = $2; }
+perexpr : val
+        | '(' exprlog ')'
         ;
 
-/* Operadores de Comparação */
-cmpl : CMP_MAQ { $$ = new BinaryOp(NULL, ">", NULL); } // Nó dummy para carregar a string
-     | CMP_MEQ { $$ = new BinaryOp(NULL, "<", NULL); }
-     | CMP_IG  { $$ = new BinaryOp(NULL, "==", NULL); }
-     | CMP_MAI { $$ = new BinaryOp(NULL, ">=", NULL); }
-     | CMP_MEI { $$ = new BinaryOp(NULL, "<=", NULL); }
-     | CMP_DIF { $$ = new BinaryOp(NULL, "!=", NULL); }
+cmpl : CMP_MAQ
+     | CMP_MEQ
+     | CMP_IG
+     | CMP_MAI
+     | CMP_MEI
+     | CMP_DIF
      ;
 
-/* Valores Primitivos e Variáveis */
-val : INTEGER { $$ = new ConstInt($1); }
-    | INTEGER ';' INTEGER { 
-        // Suporte a float com sintaxe LIMPO (ex: 2;50)
-        float f = (float)$1 + ((float)$3 / 100.0);
-        $$ = new ConstFloat(f); 
-      }
-    | FLOAT   { $$ = new ConstFloat($1); }
-    | IDENT   { $$ = new Load($1); }
-    | IDENT ']'atstring'[' { $$ = new VectorLoad($1, $3); }
-    
-    /* Suporte a literais booleanos em expressões */
-    | BOOL_T  { $$ = new ConstBool(true); }
-    | BOOL_F  { $$ = new ConstBool(false); }
+val : INTEGER
+    | FLOAT
+    | IDENT
+    | IDENT ']'atstring'['
     ;
 
-/* --- Leitura (READ) --- */
-read : READ_S '{' rdexpr '}' READ_E { $$ = new ReadNode($3); }
+read : READ_S '{' rdexpr '}' READ_E 
      ;
 
-rdexpr : tpvar '@' IDENT { 
-           // Cria um bloco para a leitura
-           $$ = new Block();
-           // Cria uma declaração implícita/uso para a leitura
-           $$->append(new VarDecl("input", $3)); 
-       }
-       | tpvar '@' IDENT rdexpr { 
-           // Adiciona ao bloco existente de leitura
-           $4->getChildren().insert($4->getChildren().begin(), new VarDecl("input", $3));
-           $$ = $4;
-       }
-       | tpvar '@' IDENT ']' atstring '[' { 
-           $$ = new Block();
-           $$->append(new VectorLoad($3, $5));
-       }
-       | tpvar '@' IDENT ']' atstring '[' rdexpr {
-           $7->getChildren().insert($7->getChildren().begin(), new VectorLoad($3, $5));
-           $$ = $7;
-       }
+rdexpr : tpvar '@' IDENT
+       | tpvar '@' IDENT rdexpr
+       | tpvar '@' IDENT ']' atstring '['
+       | tpvar '@' IDENT ']' atstring '[' rdexpr
        ;
 
-tpvar : DECL_IT { $$ = NULL; }
-      | DECL_FT { $$ = NULL; }
-      | DECL_ST { $$ = NULL; }
-      | DECL_BL { $$ = NULL; }
+tpvar : DECL_IT
+      | DECL_FT
+      | DECL_ST
+      | DECL_BL
       ;
 
-/* --- Escrita (SHOW) --- */
-show : SHOW_S '{' scont '}' SHOW_E { $$ = new PrintNode($3); }
+show : SHOW_S '{' scont '}' SHOW_E
      ;
 
-scont : string { $$ = $1; }
-      | termst { $$ = $1; }
+scont : string
+      | termst
       ;
 
-termst : mistl { $$ = $1; }
-       | mistl string { 
-           $1->append($2);
-           $$ = $1;
-       }
+termst : mistl
+       | mistl string
        ;
 
-mistl : varshow { 
-           Block* b = new Block(); 
-           b->append($1); 
-           $$ = b; 
-      }                          
-      | string varshow { 
-           Block* b = new Block();
-           b->append($1); b->append($2);
-           $$ = b;
-      }                
-      | mistl varshow {
-           $1->append($2); 
-           $$ = $1;
-      }                 
-      | mistl string varshow {
-           $1->append($2); $1->append($3); 
-           $$ = $1;
-      }         
+mistl : varshow                          
+      | string varshow                
+      | mistl varshow                 
+      | mistl string varshow         
       ;
 
-string : atstring { 
-           // Converte identificador ou número em nó de string literal para impressão
-           $$ = new ConstString($1->astLabel()); 
-       }
-       | string atstring { 
-           // Concatenação simplificada para a árvore
-           $$ = $1;
-       }
+string : atstring
+       | string atstring
        ;
 
-varshow : '%' IDENT '\\' { $$ = new Load($2); }
-        | '%' IDENT ']' atstring '[' '\\' { $$ = new VectorLoad($2, $4); }
+varshow : '%' IDENT '\\'
+        | '%' IDENT ']' atstring '[' '\\'
         ;
 
-atstring : IDENT  { $$ = new Load($1); }
-         | INTEGER { $$ = new ConstInt($1); }
-         ;
+atstring : IDENT[id] {
+     $$ = new Load($id);
+}
 
-/* --- Aritmética --- */
-arit : expr       { $$ = $1; }
-     | expr error { $$ = $1; yyerrok; }               
-     ;
+atstring : INTEGER[int] {
+     $$ = new ConstInteger($int);
+}
 
-expr : expr '+' term { $$ = new BinaryOp($1, "+", $3); }
-     | expr '-' term { $$ = new BinaryOp($1, "-", $3); }
-     | term          { $$ = $1; }
-     ;
+arit : expr {
+     $$ = $expr; 
+}
 
-term : term '*' factor { $$ = new BinaryOp($1, "*", $3); }
-     | term '/' factor { $$ = new BinaryOp($1, "/", $3); }
-     | factor          { $$ = $1; }
-     ;
+expr : expr[e1] '+' term {
+     $$ = new BinaryOp($e1, '+', $term);
+}
 
-factor : '(' expr ')'          { $$ = $2; }
-       | INTEGER ';' INTEGER   { 
-           float f = (float)$1 + ((float)$3 / 100.0);
-           $$ = new ConstFloat(f); 
-       }
-       | FLOAT                 { $$ = new ConstFloat($1); }
-       | INTEGER               { $$ = new ConstInt($1); }
-       | IDENT                 { $$ = new Load($1); }
-       | IDENT ']'atstring'['  { $$ = new VectorLoad($1, $3); }
-       ;
+expr : expr[e1] '-' term {
+     $$ = new BinaryOp($e1, '-', $term);
+}
 
-comblock : comblock stmt { 
-             $1->append($2); 
-             $$ = $1; 
-         }
-         | stmt { 
-             $$ = new Block(); 
-             $$->append($1); 
-         }
+expr : term {
+     $$ = $term;
+}
+
+term : term[t1] '*' factor {
+     $$ = new BinaryOp($t1, '*', $factor);
+}
+
+term : term[t1] '/' factor {
+     $$ = new BinaryOp($t1, '/', $factor);
+}
+     
+term : factor {
+     $$ = $factor;
+}
+
+factor : '(' expr ')'{
+     $$ = $expr;
+}
+
+factor : FLOAT[flt] {
+     $$ = new ConstDouble($flt);
+}
+
+factor : INTEGER[int]{
+     $$ = new ConstInteger($int);
+}
+
+factor : IDENT[id] {
+     $$ = new Load($id);
+}
+       
+factor : IDENT[id] ']'atstring[ats]'[' {
+     $$ = new LoadVector($id, $ats);
+}
+
+comblock : comblock stmt
+         | stmt
          ;
 
 %%
-/* Main no lexico.l */
