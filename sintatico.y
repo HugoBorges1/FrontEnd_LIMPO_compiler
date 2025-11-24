@@ -12,7 +12,7 @@ int yylex(void);
 %token<flt> FLOAT
 %token<name> IDENT
 
-%type<node> stmts stmt atrib arit expr term factor prog atstring decl if show read loop comblock cond exprlog termlog faclog perexpr
+%type<node> stmts stmt atrib arit expr term factor prog atstring decl if show read loop comblock exprlog termlog faclog perexpr
 
 %start prog
 
@@ -109,16 +109,13 @@ atrib : IDENT[id] ']'atstring[ats]'[' '=' BOOL_F{
 }   
 
 loop : LOOP_S INTEGER ':' DECL_IT IDENT ICR LOOP_E '|' comblock '|'
-     | LOOP_S cond LOOP_E '|' comblock '|'
-     | LOOP_S cond LOOP_E '|' comblock LOOP_P '|'
+     | LOOP_S exprlog LOOP_E '|' comblock '|'
+     | LOOP_S exprlog LOOP_E '|' comblock LOOP_P '|'
      ;
 
-if : IF_S cond IF_E '|' comblock '|'
-   | IF_S cond IF_E '|' comblock '|' ELSE_S comblock ELSE_E
+if : IF_S exprlog IF_E '|' comblock '|'
+   | IF_S exprlog IF_E '|' comblock '|' ELSE_S comblock ELSE_E
    ;
-
-cond : exprlog
-     ;
 
 exprlog : termlog
         | exprlog CMP_OR termlog
