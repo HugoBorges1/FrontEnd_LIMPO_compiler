@@ -12,7 +12,8 @@ int yylex(void);
 %token<flt> FLOAT
 %token<name> IDENT
 
-%type<node> stmts stmt atrib arit expr term factor prog atstring decl if show read loop comblock exprlog termlog faclog perexpr
+%type<node> stmts stmt atrib arit expr term factor prog atstring decl if read loop comblock exprlog termlog faclog perexpr
+%type<node> show scont termst mistl string varshow
 
 %start prog
 
@@ -117,6 +118,10 @@ if : IF_S exprlog IF_E '|' comblock '|'
    | IF_S exprlog IF_E '|' comblock '|' ELSE_S comblock ELSE_E
    ;
 
+comblock : comblock stmt
+         | stmt
+         ;
+
 exprlog : termlog
         | exprlog CMP_OR termlog
         ;
@@ -165,33 +170,68 @@ tpvar : DECL_IT
       | DECL_BL
       ;
 
-show : SHOW_S '{' scont '}' SHOW_E
-     ;
+show : SHOW_S '{' scont[Sseq] '}' SHOW_E {
+     $$ = new Print($Sseq);
+}
 
-scont : string
-      | termst
-      ;
+scont : string[str] {
+     $$ = $str;
+}
 
-termst : mistl
-       | mistl string
-       ;
+scont : termst[trs] {
+     $$ = $trs;
+}
 
-mistl : varshow                          
-      | string varshow                
-      | mistl varshow                 
-      | mistl string varshow         
-      ;
+termst : mistl[msl] {
+     $$ = $msl;
+}
 
-string : atstring
-       | string atstring
-       ;
+termst : mistl[msl] string[str] {
+     $msl->append($str);
+     $$ = $msl;
+}
 
-varshow : '%' IDENT '\\'
-        | '%' IDENT ']' atstring '[' '\\'
-        ;
+mistl : varshow[vsh] {
+     $$ = new PrintSeq($vsh);
+}                       
+
+mistl : string[str] varshow[vsh] {
+     $str->append($vsh);
+     $$ = $str;
+}              
+
+mistl : mistl[msl] varshow[vsh] {
+     $msl->append($vsh);
+     $$ = $msl;
+}               
+
+mistl : mistl[msl] string[str] varshow[vsh] {
+      $msl->append($str); 
+      $msl->append($vsh); 
+      $$ = $msl;
+}
+
+
+string : atstring[ats] {
+     $$ = new PrintSeq($ats);
+}
+
+string : string[str] atstring[ats] {
+     $str->append($ats);
+     $$ = $str;
+}
+
+
+varshow : '%' IDENT[id] '\\' {
+     $$ = new Load($id);
+}
+
+varshow : '%' IDENT[id] ']' atstring[ats] '[' '\\' {
+     $$ = new LoadVector($id, $ats);
+}
 
 atstring : IDENT[id] {
-     $$ = new Load($id);
+     $$ = new ConstString($id);
 }
 
 atstring : INTEGER[int] {
@@ -245,9 +285,5 @@ factor : IDENT[id] {
 factor : IDENT[id] ']'atstring[ats]'[' {
      $$ = new LoadVector($id, $ats);
 }
-
-comblock : comblock stmt
-         | stmt
-         ;
 
 %%

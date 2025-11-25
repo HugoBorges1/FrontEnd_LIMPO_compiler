@@ -149,6 +149,19 @@ class LoadVector: public Node {
         string getName() { return name; }
 };
 
+class ConstString: public Node {
+    protected:
+        string value;
+    public:
+        ConstString(string value) {
+            this->value = value;
+        }
+
+        string astLabel() override {
+            return value; 
+        }
+};
+
 class ConstInteger: public Node {
     protected:
         int value;
@@ -205,18 +218,26 @@ class BinaryOp: public Node {
         }
 };
 
+class PrintSeq: public Node {
+    public:
+        PrintSeq(Node *n) {
+            this->append(n);
+        }
+
+        string astLabel() override {
+            return "seq_print";
+        }
+};
+
 class Print: public Node {
     protected:
     public:
-        Print(Node *expr) {
-            this->append(expr);
+        Print(Node *seq) {
+            this->append(seq);
         }
     
     string astLabel() override {
-        string r;
-        r.append("print ");
-        r.append(children[0]->astLabel());
-        return r;
+        return "print";
     }
 };
 
@@ -264,6 +285,49 @@ class Program: public Node {
             string astLabel() override {
                 return "program";
             }
+};
+
+class CompOp: public Node {
+    protected:
+        string oper;
+    public:
+        CompOp(Node *left, string oper, Node *right) {
+            this->oper = oper;
+            this->append(left);
+            this->append(right);
+        }
+
+        string astLabel() override
+};
+
+class IfStmt: public Node {
+    public:
+        IfStmt(Node *cond, Node *block) {
+            this->append(cond);
+            this->append(block);
+        }
+
+        IfStmt(Node *cond, Node *blockTrue, Node *blockFalse) {
+            this->append(cond);
+            this->append(blockTrue);
+            this->append(blockFalse);
+        }
+
+        string astLabel() override {
+            return "if";
+        }
+};
+
+class LoopStmt: public Node {
+    public:
+        LoopStmt(Node *cond, Node *block) {
+            this->append(cond);
+            this->append(block);
+        }
+
+        string astLabel() override {
+            return "Loop";
+        }
 };
 
 class SemanticVarDecl {

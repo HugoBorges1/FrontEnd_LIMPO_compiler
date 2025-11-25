@@ -42,4 +42,4 @@ LO var_float_vet ]2[ DIFERENTE_DE 4501;29 OP |
 
 SH {Valor dos vetores manipulados %var_int_vet ]2[\ %var_float_vet ]2[\ %var_string_vet]10[\ %var_bool_vet ]0[\ %var_bool_vet ]1[\ 
 valor dos vetores nao alterados %var_bool_vet ]0[\ %var_bool_vet ]1[\ %var_int_vet ]0[\ %var_int_vet ]1[\ %var_float_vet ]0[\ %var_float_vet ]1[\ 
-valor de variaveis inseridas %var_bool\ %var_int\ %var_float\ %var_stringl\ } OW
+valor de variaveis inseridas %var_bool\ %var_int\ %var_float\ %var_string\ } OW

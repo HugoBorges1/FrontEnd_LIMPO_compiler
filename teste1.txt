@@ -1,7 +1,4 @@
-it a]10[
+st Nome_1
+st Nome_2
 
-a]0[ = 15 + 2
-
-a]1[ = 15 + 25
-
-a]7[ = 1 + 2
+SH {O nome %Nome_1\ corresponde ao nome %Nome_2\ } OW
