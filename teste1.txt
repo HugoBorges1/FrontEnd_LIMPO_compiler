@@ -1,4 +1,5 @@
 st Nome_1
 st Nome_2
+st Nome_3
 
 SH {O nome %Nome_1\ corresponde ao nome %Nome_2\ } OW
