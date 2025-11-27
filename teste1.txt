@@ -1,5 +1,9 @@
-st Nome_1
-st Nome_2
-st Nome_3
+bl boolano
 
-SH {O nome %Nome_1\ corresponde ao nome %Nome_2\ } OW
+bl booleanoVet ]3[
+
+booleanoVet ]0[ = NOTTHELIES
+
+booleanoVet ]1[ = NOTTHETRUTH
+
+booleanoVet ]2[ = NOTTHELIES

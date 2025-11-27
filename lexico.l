@@ -69,7 +69,7 @@ int errorcount = 0;
     return INTEGER;  
 }
 
-[0-9]+\.[0-9]+  { 
+[0-9]+\;[0-9]+  { 
     yylval.flt = atof(yytext);
     return FLOAT; 
 }

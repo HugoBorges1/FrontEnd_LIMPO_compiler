@@ -1,7 +1,18 @@
 %{
 #include "nodes.h"
+#include <map>
+#include <string>
+
 int yyerror(const char *s);
 int yylex(void);
+
+std::map<std::string, int> memory_int;
+std::map<std::string, std::map<int, int>> memory_vector_int;
+std::map<std::string, std::string> memory_string;
+std::map<std::string, std::map<int, std::string>> memory_vector_string;
+std::set<std::string> declared_vars;
+std::map<std::string, std::map<int, bool>> memory_vector_bool;
+
 %}
 
 %define parse.error verbose 
@@ -55,38 +66,53 @@ stmt : atrib
      ;
 
 decl : DECL_IT IDENT[name] ']' INTEGER[size] '[' {
+     declared_vars.insert($name);
      $$ = new VectorDecl($name, $size, "int");
 }
 
 decl : DECL_ST IDENT[name] ']' INTEGER[size] '[' {
+     declared_vars.insert($name);
      $$ = new VectorDecl($name, $size, "string");
 }
 
 decl : DECL_FT IDENT[name] ']' INTEGER[size] '[' {
+     declared_vars.insert($name);
      $$ = new VectorDecl($name, $size, "float");
 }
 
 decl : DECL_BL IDENT[name] ']' INTEGER[size] '[' {
+     declared_vars.insert($name);
      $$ = new VectorDecl($name, $size, "boolean");
 }
 
 decl : DECL_IT IDENT[name] {
+     declared_vars.insert($name);
      $$ = new VarDecl($name, "int");
 }
 
 decl : DECL_FT IDENT[name] {
+     declared_vars.insert($name);
      $$ = new VarDecl($name, "float");
 }
 
 decl : DECL_BL IDENT[name] {
+     declared_vars.insert($name);
      $$ = new VarDecl($name, "bool");
 }
 
 decl : DECL_ST IDENT[name] {
+     declared_vars.insert($name);
      $$ = new VarDecl($name, "string");
 }
 
 atrib : IDENT[id] '=' arit[at] {
+     string sVal = $at->getStringValue();
+     if (sVal != "") {
+          memory_string[$id] = sVal;
+     } else {
+          int val = $at->getIntValue(); 
+          memory_int[$id] = val;
+     }
      $$ = new Store($id, $at);
 }
 
@@ -99,16 +125,32 @@ atrib : IDENT[id] '=' BOOL_F {
 }
 
 atrib : IDENT[id] ']'indice[idx]'[' '=' arit[at] {
-     $$ = new StoreVector($id, $idx, $at);
+     int indexVal = $idx->getIntValue();
+     string strVal = $at->getStringValue();
+
+     if (strVal != "") {
+          memory_vector_string[$id][indexVal] = strVal;
+          $$ = new StoreVector($id, $idx, $at, indexVal, true);
+     } 
+     else {
+          int intVal = $at->getIntValue();
+          memory_vector_int[$id][indexVal] = intVal;
+          $$ = new StoreVector($id, $idx, $at, indexVal, true);
+     }
 }
 
-atrib : IDENT[id] ']'indice[idx]'[' '=' BOOL_T{
-     $$ = new StoreVector($id, $idx, new ConstBoolean(true));
+atrib : IDENT[id] ']'indice[idx]'[' '=' BOOL_T {
+     int indexVal = $idx->getIntValue();
+     memory_vector_bool[$id][indexVal] = true;
+     $$ = new StoreVector($id, $idx, new ConstBoolean(true), indexVal, true);
 }
 
-atrib : IDENT[id] ']'indice[idx]'[' '=' BOOL_F{
-     $$ = new StoreVector($id, $idx, new ConstBoolean(false));
-}   
+
+atrib : IDENT[id] ']'indice[idx]'[' '=' BOOL_F {
+     int indexVal = $idx->getIntValue();
+     memory_vector_bool[$id][indexVal] = false;
+     $$ = new StoreVector($id, $idx, new ConstBoolean(false), indexVal, true);
+}  
 
 loop : LOOP_S INTEGER[lim] ':' DECL_IT IDENT[id] ICR LOOP_E '|' comblock[bc] '|' {
      $$ = new ForStmt($id, $lim, $bc);
@@ -207,8 +249,22 @@ val : FLOAT[f] {
     $$ = new ConstDouble($f); 
 }
 
+/* Substitua a regra val : IDENT (linha ~50) */
 val : IDENT[id] { 
-    $$ = new Load($id); 
+    if (declared_vars.count($id)) {
+        if (memory_string.count($id)) {
+             $$ = new Load($id, memory_string[$id], true);
+        }
+        else if (memory_int.count($id)) {
+             $$ = new Load($id, memory_int[$id], true);
+        } 
+        else {
+             $$ = new Load($id);
+        }
+    } 
+    else {
+        $$ = new ConstString($id);
+    }
 }
 
 val : IDENT[id] ']' indice[idx] '[' { 
@@ -309,7 +365,20 @@ varshow : '%' IDENT[id] '\\' {
 }
 
 varshow : '%' IDENT[id] ']' atstring[ats] '[' '\\' {
-     $$ = new LoadVector($id, $ats);
+     int idx = $ats->getIntValue();
+
+     if (memory_vector_string.count($id) && memory_vector_string[$id].count(idx)) {
+          string val = memory_vector_string[$id][idx];
+          $$ = new LoadVector($id, $ats, idx, val, true);
+     }
+
+     else if (memory_vector_int.count($id) && memory_vector_int[$id].count(idx)) {
+          int val = memory_vector_int[$id][idx];
+          $$ = new LoadVector($id, $ats, idx, val, true);
+     }
+     else {
+          $$ = new LoadVector($id, $ats, idx, 0, false);
+     }
 }
 
 atstring : IDENT[id] {
@@ -369,11 +438,37 @@ factor : INTEGER[int]{
 }
 
 factor : IDENT[id] {
-     $$ = new Load($id);
+    if (declared_vars.count($id)) {
+        if (memory_string.count($id)) {
+             $$ = new Load($id, memory_string[$id], true);
+        }
+        else if (memory_int.count($id)) {
+             $$ = new Load($id, memory_int[$id], true);
+        } 
+        else {
+             $$ = new Load($id);
+        }
+    } 
+    else {
+        $$ = new ConstString($id);
+    }
 }
        
 factor : IDENT[id] ']'indice[idx]'[' {
-     $$ = new LoadVector($id, $idx);
+     int indexVal = $idx->getIntValue();
+     
+     if (memory_vector_string.count($id) && memory_vector_string[$id].count(indexVal)) {
+          string val = memory_vector_string[$id][indexVal];
+          $$ = new LoadVector($id, $idx, indexVal, val, true);
+     }
+
+     else if (memory_vector_int.count($id) && memory_vector_int[$id].count(indexVal)) {
+          int val = memory_vector_int[$id][indexVal];
+          $$ = new LoadVector($id, $idx, indexVal, val, true);
+     } 
+     else {
+          $$ = new LoadVector($id, $idx);
+     }
 }
 
 %%
