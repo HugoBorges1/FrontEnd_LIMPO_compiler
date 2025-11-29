@@ -1,9 +1,45 @@
-ft varfloat
+it Ait
+it Bitv ]5[
 
-ft vetfloat ]2[
+st Ast 
+st Astv ]5[
 
-varfloat = 10;56
+bl Abl
+bl Ablv ]5[
 
-vetfloat ]0[ = 11;1
+ft Aft
+ft Bftv ]5[
 
-vetfloat ]1[ = vetfloat ]0[ + varfloat
+Ait = 10
+Bitv ]0[ = 55
+
+Ast = oidasilva
+Astv ]0[ = tchaudoreis
+
+Abl = NOTTHELIES
+Ablv ]0[ = NOTTHETRUTH 
+
+Aft = 5;25
+Bftv ]0[ = 1;12
+Bftv ]1[ = 5;55
+
+Ait = Bitv ]0[ + Ait
+Bitv ]0[ = Ait + Ait
+Bitv ]1[ = 400
+
+Aft = Aft + Bftv ]0[
+
+Bftv ]0[ = Bftv ]0[ / Aft
+
+Astv ]0[ = Astv ]0[ + Ast
+
+Ast = Astv]0[ + Astv]0[
+
+RE { it @ Aft it @ Bftv ]1[} AD
+
+RE { it @ Aft it @ Bftv ]1[} AD
+RE { it @ Aft it @ Bftv ]1[} AD
+
+SH { %Aft\ %Bftv ]1[\} OW
+
+SH { %Aft\ %Bftv ]1[\} OW

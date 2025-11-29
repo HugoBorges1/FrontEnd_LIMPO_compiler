@@ -130,7 +130,7 @@ class VarDecl: public Node {
         }
 
         string astLabel() override {
-            return "DeclVar " + type + ":" + name;
+            return "DeclVar " + type + ": " + name;
         }
 
         string getName() {
@@ -145,46 +145,74 @@ class VarDecl: public Node {
 class Load: public Node {
     protected:
         string name;
+        string currentStr;
+
         int currentVal; 
+        int readCount;
+
         double currentDouble;
-        string currentStr; 
-        
+
+        bool currentBool; 
         bool isString;    
         bool isDouble;   
+        bool isBool;      
         bool hasValue;  
+
     public:
-        Load(string name, int val = 0, bool hasVal = false){
+        Load(string name, int val = 0, bool hasVal = false, int reads = 0){
             this->name = name;
             this->currentVal = val;
             this->hasValue = hasVal;
+            this->readCount = reads;
             this->isString = false;
             this->isDouble = false;
+            this->isBool = false;
             
             if (hasVal) this->append(new ConstInteger(val));
         }
 
-        Load(string name, string val, bool hasVal = false){
+        Load(string name, string val, bool hasVal = false, int reads = 0){
             this->name = name;
             this->currentStr = val;
             this->hasValue = hasVal;
+            this->readCount = reads;
             this->isString = true;
             this->isDouble = false;
+            this->isBool = false;
 
             if (hasVal) this->append(new ConstString(val));
         }
 
-        Load(string name, double val, bool hasVal = false){
+        Load(string name, double val, bool hasVal = false, int reads = 0){
             this->name = name;
             this->currentDouble = val;
             this->hasValue = hasVal;
+            this->readCount = reads;
             this->isString = false;
             this->isDouble = true; 
+            this->isBool = false;
 
             if (hasVal) this->append(new ConstDouble(val));
         }
 
+        Load(string name, bool val, bool hasVal = false){
+            this->name = name;
+            this->currentBool = val;
+            this->hasValue = hasVal;
+            this->isString = false;
+            this->isDouble = false;
+            this->isBool = true;
+
+            if (hasVal) this->append(new ConstBoolean(val));
+        }
+
     string astLabel() override {
-        return name;
+
+        string label = "LoadVar " + name; 
+        if (readCount > 0) {
+            label += " | changedByRead(" + to_string(readCount) + ")";
+        }
+        return label;
     }
     
     string getName() { 
@@ -194,11 +222,13 @@ class Load: public Node {
     string getStringValue() override { 
         return (hasValue && isString) ? currentStr : ""; 
     }
+
     int getIntValue() override { 
-        return (hasValue && !isString && !isDouble) ? currentVal : 0; 
+        return (hasValue && !isString && !isDouble && !isBool) ? currentVal : 0; 
     }
+
     double getDoubleValue() override { 
-        return (hasValue && isDouble) ? currentDouble : 0.0; 
+        return (hasValue && isDouble) ? currentDouble : 0.0;
     }
 };
 
@@ -220,14 +250,14 @@ class Store: public Node {
 
         string getName() {
             return name;
-        }
-        
+        }   
 };
 
 class VectorDecl: public Node {
     protected:
         string name;
         string type;
+
         int size;
     public:
         VectorDecl(string name, int size, string type){
@@ -237,7 +267,7 @@ class VectorDecl: public Node {
         }
 
         string astLabel() override {
-            return "DeclVector " + type + ":" + name + "]" + to_string(size) + "[";
+            return "DeclVector " + type + ": " + name + "]" + to_string(size) + "[";
         }
 
         string getName() { 
@@ -268,14 +298,15 @@ class StoreVector: public Node {
 
         string astLabel() override {
             if (hasIndex) {
-                return "store_array " + name + " ]" + to_string(index) + "[";
+                return "StoreVector " + name + " ]" + to_string(index) + "[";
             }
-            return "store_array " + name;
+            return "StoreVector " + name;
         }
 
         string getName() { 
             return name; 
         }
+
         int getIndex() { 
             return index; 
         }
@@ -284,53 +315,60 @@ class StoreVector: public Node {
 class LoadVector: public Node {
     protected:
         string name;
+        string resolvedStr; 
+
         int resolvedIndex;
         int resolvedInt;
+        int readCount;
+
         double resolvedDouble;
-        string resolvedStr; 
+
         bool resolvedBool;
-  
         bool isString;      
         bool isBool;  
         bool isDouble;     
         bool hasInfo;
 
     public:
-        LoadVector(string name, Node *index){
+        LoadVector(string name, Node *index, int reads = 0){
             this->name = name;
             this->hasInfo = false;
+            this->readCount = reads;
         }
 
-        LoadVector(string name, Node *index, int idxVal, int val, bool info){
+        LoadVector(string name, Node *index, int idxVal, int val, bool info, int reads = 0){
             this->name = name;
             this->resolvedIndex = idxVal;
             this->resolvedInt = val;
+            this->hasInfo = info;
+            this->readCount = reads;
             this->isString = false;
             this->isBool = false;
-            this->hasInfo = info;
             
             if (info) this->append(new ConstInteger(val));
         }
 
-        LoadVector(string name, Node *index, int idxVal, string val, bool info){
+        LoadVector(string name, Node *index, int idxVal, string val, bool info, int reads = 0){
             this->name = name;
             this->resolvedIndex = idxVal;
             this->resolvedStr = val;
+            this->hasInfo = info;
+            this->readCount = reads;
             this->isString = true;
             this->isBool = false;
-            this->hasInfo = info;
 
             if (info) this->append(new ConstString(val));
         }
 
-        LoadVector(string name, Node *index, int idxVal, double val, bool info){
+        LoadVector(string name, Node *index, int idxVal, double val, bool info, int reads = 0){
             this->name = name;
             this->resolvedIndex = idxVal;
             this->resolvedDouble = val;
+            this->hasInfo = info;
+            this->readCount = reads;
             this->isString = false;
             this->isBool = false;
             this->isDouble = true;
-            this->hasInfo = info;
             
             if (info) this->append(new ConstDouble(val));
         }
@@ -346,7 +384,12 @@ class LoadVector: public Node {
         }
 
         string astLabel() override {
-            return "load_array " + name + " ]" + to_string(resolvedIndex) + "[";
+            string label = "LoadVector " + name + " ]" + to_string(resolvedIndex) + "[";
+            
+            if (readCount > 0) {
+                label += " | changedByRead(" + to_string(readCount) + ")";
+            }
+            return label;
         }
 
         string getName() { 
@@ -382,6 +425,7 @@ class BinaryOp: public Node {
         string astLabel() override {
             string r;
             r.push_back(oper);
+
             return r;
         }
 
@@ -393,6 +437,7 @@ class BinaryOp: public Node {
             if (oper == '-') return v1 - v2;
             if (oper == '*') return v1 * v2;
             if (oper == '/') return v2 != 0 ? v1 / v2 : 0;
+
             return 0;
         }
 
@@ -404,8 +449,9 @@ class BinaryOp: public Node {
             if (oper == '-') return v1 - v2;
             if (oper == '*') return v1 * v2;
             if (oper == '/') return v2 != 0.0 ? v1 / v2 : 0.0;
-        return 0.0;
-    }
+
+            return 0.0;
+        }
 
         string getStringValue() override {
             if (oper == '+') {
@@ -416,13 +462,14 @@ class BinaryOp: public Node {
 };
 
 class PrintSeq: public Node {
+    protected:
     public:
         PrintSeq(Node *n) {
             this->append(n);
         }
 
         string astLabel() override {
-            return "seq_print";
+            return "BlockShow";
         }
 };
 
@@ -434,7 +481,7 @@ class Print: public Node {
         }
     
     string astLabel() override {
-        return "print";
+        return "Show";
     }
 };
 
@@ -446,7 +493,7 @@ class ReadSeq: public Node {
         }
         
         string astLabel() override {
-            return "seq_read";
+            return "ReadBlock";
         }
 };
 
@@ -454,15 +501,16 @@ class ReadVector: public Node {
     protected:
         string name;
         string type;
+        string indexName; 
     public:
         ReadVector(string type, string name, Node *index) {
             this->type = type;
             this->name = name;
-            this->append(index); 
+            this->indexName = index->astLabel(); 
         }
 
         string astLabel() override {
-            return "read_array (" + type + ") " + name;
+            return "ReadVector (" + type + ") " + name + " ]" + indexName + "[";
         }
 };
 
@@ -477,18 +525,19 @@ class ReadVar: public Node {
         }
 
         string astLabel() override {
-            return "read_var (" + type + ") " + name;
+            return "ReadVar (" + type + ") " + name;
         }
 };
 
 class Read: public Node {
+    protected:
     public:
         Read(Node *seq) {
             this->append(seq); 
         }
     
         string astLabel() override {
-            return "read";
+            return "Read";
         }
 };
 
@@ -500,7 +549,7 @@ class Stmts: public Node {
         }
 
     string astLabel() override {
-        return "stmts";
+        return "Stmts";
     }
 };
 
@@ -515,29 +564,64 @@ class CompOp: public Node {
         }
 
         string astLabel() override {
-            return "compare";
+            return "compare [" + oper + "]";
+        }
+};
+
+class IfCondition: public Node {
+    protected:
+    public:
+        IfCondition(Node *expression) {
+            this->append(expression);
+        }
+        string astLabel() override {
+            return "Condition";
+        }
+};
+
+class BlockTrue: public Node {
+    protected: 
+    public:
+        BlockTrue(Node *stmts) {
+            this->append(stmts);
+        }
+        string astLabel() override {
+            return "True Block";
+        }
+};
+
+class BlockFalse: public Node {
+    protected: 
+    public:
+        BlockFalse(Node *stmts) {
+            this->append(stmts);
+        }
+        string astLabel() override {
+            return "Else Block";
         }
 };
 
 class IfStmt: public Node {
+    protected: 
     public:
         IfStmt(Node *cond, Node *block) {
-            this->append(cond);
-            this->append(block);
+            this->append(new IfCondition(cond));
+            this->append(new BlockTrue(block));
         }
 
         IfStmt(Node *cond, Node *blockTrue, Node *blockFalse) {
-            this->append(cond);
-            this->append(blockTrue);
-            this->append(blockFalse);
+            this->append(new IfCondition(cond));
+            this->append(new BlockTrue(blockTrue));
+            this->append(new BlockFalse(blockFalse));
         }
 
         string astLabel() override {
-            return "if";
+            return "IF";
         }
 };
 
 class ForStmt: public Node {
+    protected: 
     public:
         ForStmt(string iteratorName, int limit, Node *body) {
             this->append(new VarDecl(iteratorName, "int"));
@@ -546,11 +630,12 @@ class ForStmt: public Node {
         }
 
         string astLabel() override {
-            return "ForLoop";
+            return "ForLOOP";
         }
 };
 
 class LoopStmt: public Node {
+    protected: 
     public:
         LoopStmt(Node *cond, Node *block) {
             this->append(cond);
@@ -558,7 +643,7 @@ class LoopStmt: public Node {
         }
 
         string astLabel() override {
-            return "Loop";
+            return "LOOP";
         }
 };
 
@@ -592,7 +677,7 @@ class Program: public Node {
         }
 
             string astLabel() override {
-                return "program";
+                return "Program";
             }
 };
 

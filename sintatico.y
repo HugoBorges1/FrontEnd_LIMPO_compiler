@@ -8,11 +8,17 @@ int yylex(void);
 
 std::map<std::string, int> memory_int;
 std::map<std::string, std::map<int, int>> memory_vector_int;
+
 std::map<std::string, std::string> memory_string;
 std::map<std::string, std::map<int, std::string>> memory_vector_string;
+
 std::map<std::string, double> memory_float; 
 std::map<std::string, std::map<int, double>> memory_vector_float;
+
+std::map<std::string, bool> memory_bool;
 std::map<std::string, std::map<int, bool>> memory_vector_bool;
+
+std::map<std::string, int> read_counts;
 
 std::set<std::string> declared_vars;
 std::set<std::string> declared_floats;
@@ -28,7 +34,7 @@ std::set<std::string> declared_floats;
 %token<name> IDENT
 
 %type<node> stmts stmt atrib arit expr term factor prog atstring decl if loop comblock exprlog termlog faclog perexpr
-%type<node> show scont termst mistl string varshow rdexpr rditem read indice comp val
+%type<node> show varshow rdexpr rditem read indice comp val showITM showLST
 %type<name> tpvar cmpl
 
 %start prog
@@ -128,10 +134,12 @@ atrib : IDENT[id] '=' arit[at] {
 }
 
 atrib : IDENT[id] '=' BOOL_T {
+     memory_bool[$id] = true; 
      $$ = new Store($id,  new ConstBoolean(true));
 }
 
 atrib : IDENT[id] '=' BOOL_F {
+     memory_bool[$id] = false; 
      $$ = new Store($id,  new ConstBoolean(false));
 }
 
@@ -197,24 +205,24 @@ comblock : stmt {
      $$ = new Stmts($stmt);
 }
 
-exprlog : termlog { 
-     $$ = $1;
+exprlog : termlog[trm] { 
+     $$ = $trm;
 }
 
 exprlog : exprlog[e1] CMP_OR termlog[e2] {
-     $$ = new CompOp($e1, "OR", $e2);
+     $$ = new CompOp($e1, "OU", $e2);
 }
 
-termlog : faclog { 
-     $$ = $1; 
+termlog : faclog[fcl] { 
+     $$ = $fcl; 
 }
 
 termlog : termlog[t1] CMP_AND faclog[f1] {
-     $$ = new CompOp($t1, "AND", $f1);
+     $$ = new CompOp($t1, "E", $f1);
 }
 
-faclog : perexpr { 
-     $$ = $1; 
+faclog : perexpr[prx] { 
+     $$ = $prx; 
 }
 
 faclog : comp[cmp] { 
@@ -234,27 +242,27 @@ perexpr : '(' exprlog[exl] ')' {
 }
 
 cmpl : CMP_MAQ { 
-     $$ = (char*)">"; 
+     $$ = (char*)"MAIOR_QUE"; 
 }
 
 cmpl : CMP_MEQ { 
-     $$ = (char*)"<"; 
+     $$ = (char*)"MENOR_QUE"; 
 }
 
 cmpl : CMP_IG  { 
-     $$ = (char*)"=="; 
+     $$ = (char*)"IGUAL_A"; 
 }
 
 cmpl : CMP_MAI { 
-     $$ = (char*)">="; 
+     $$ = (char*)"MAIOR_OU_IGUAL_A"; 
 }
 
 cmpl : CMP_MEI { 
-     $$ = (char*)"<="; 
+     $$ = (char*)"MENOR_OU_IGUAL_A"; 
 }
 
 cmpl : CMP_DIF { 
-     $$ = (char*)"!="; 
+     $$ = (char*)"DIFERENTE_DE"; 
 }
 
 val : INTEGER[i] { 
@@ -266,16 +274,19 @@ val : FLOAT[f] {
 }
 
 val : IDENT[id] { 
+    int reads = read_counts[$id];
+    
     if (declared_vars.count($id)) {
-        if (memory_string.count($id)) {
-             $$ = new Load($id, memory_string[$id], true);
+        if (memory_int.count($id)) {
+            
+             $$ = new Load($id, memory_int[$id], true, reads);
         }
         else if (memory_float.count($id)) {
              double val = memory_float[$id];
-             $$ = new Load($id, val, true); 
+             $$ = new Load($id, val, true, reads); 
         } 
         else if (memory_int.count($id)) {
-             $$ = new Load($id, memory_int[$id], true);
+             $$ = new Load($id, memory_int[$id], true, reads);
         } 
         else {
              $$ = new Load($id);
@@ -304,10 +315,12 @@ rdexpr : rdexpr[lst] rditem[itm] {
 }
 
 rditem : tpvar[typ] '@' IDENT[id] {
+     read_counts[$id]++; 
      $$ = new ReadVar($typ, $id);
 }
 
 rditem : tpvar[typ] '@' IDENT[id] ']' indice[idx] '[' {
+       read_counts[$id]++; 
        $$ = new ReadVector($typ, $id, $idx);
 }
 
@@ -322,79 +335,74 @@ tpvar : DECL_FT {
 tpvar : DECL_ST {
      $$ = (char*)"string";
 }
-     
-tpvar : DECL_BL {
-     $$ = (char*)"bool";
+
+show : SHOW_S '{' showLST[lista] '}' SHOW_E {
+     $$ = new Print($lista);
 }
 
-show : SHOW_S '{' scont[Sseq] '}' SHOW_E {
-     $$ = new Print($Sseq);
+showLST : showITM[item] {
+     $$ = new PrintSeq($item);
 }
 
-scont : string[str] {
-     $$ = $str;
+showLST : showLST[lista] showITM[item] {
+     $lista->append($item);    
+     $$ = $lista;
 }
 
-scont : termst[trs] {
-     $$ = $trs;
+showITM : atstring[txt] {
+     $$ = $txt; 
 }
 
-termst : mistl[msl] {
-     $$ = $msl;
-}
-
-termst : mistl[msl] string[str] {
-     $msl->append($str);
-     $$ = $msl;
-}
-
-mistl : varshow[vsh] {
-     $$ = new PrintSeq($vsh);
-}                       
-
-mistl : string[str] varshow[vsh] {
-     $str->append($vsh);
-     $$ = $str;
-}              
-
-mistl : mistl[msl] varshow[vsh] {
-     $msl->append($vsh);
-     $$ = $msl;
-}               
-
-mistl : mistl[msl] string[str] varshow[vsh] {
-      $msl->append($str); 
-      $msl->append($vsh); 
-      $$ = $msl;
-}
-
-string : atstring[ats] {
-     $$ = new PrintSeq($ats);
-}
-
-string : string[str] atstring[ats] {
-     $str->append($ats);
-     $$ = $str;
+showITM : varshow[var] {
+     $$ = $var;
 }
 
 varshow : '%' IDENT[id] '\\' {
-     $$ = new Load($id);
+     int reads = read_counts[$id]; 
+
+     if (memory_string.count($id)) {
+
+          $$ = new Load($id, memory_string[$id], true, reads);
+     }
+     else if (memory_float.count($id)) {
+          double val = memory_float[$id];
+          $$ = new Load($id, val, true, reads);
+     }
+     else if (memory_int.count($id)) {
+          $$ = new Load($id, memory_int[$id], true, reads);
+     } 
+     else if (memory_bool.count($id)) {
+          bool val = memory_bool[$id];
+          $$ = new Load($id, val, true, reads);
+     }
+     else {
+
+          $$ = new Load($id, 0, false, reads);
+     }
 }
 
 varshow : '%' IDENT[id] ']' atstring[ats] '[' '\\' {
      int idx = $ats->getIntValue();
+     int reads = read_counts[$id];
 
      if (memory_vector_string.count($id) && memory_vector_string[$id].count(idx)) {
           string val = memory_vector_string[$id][idx];
-          $$ = new LoadVector($id, $ats, idx, val, true);
-     } else if (memory_vector_int.count($id) && memory_vector_int[$id].count(idx)) {
+          $$ = new LoadVector($id, $ats, idx, val, true, reads);
+     }
+     else if (memory_vector_int.count($id) && memory_vector_int[$id].count(idx)) {
           int val = memory_vector_int[$id][idx];
-          $$ = new LoadVector($id, $ats, idx, val, true);
-     } else if (memory_vector_bool.count($id) && memory_vector_bool[$id].count(idx)) {
+          $$ = new LoadVector($id, $ats, idx, val, true, reads);
+     }
+     else if (memory_vector_float.count($id) && memory_vector_float[$id].count(idx)) {
+          double val = memory_vector_float[$id][idx];
+          $$ = new LoadVector($id, $ats, idx, val, true, reads);
+     }
+     else if (memory_vector_bool.count($id) && memory_vector_bool[$id].count(idx)) {
           bool val = memory_vector_bool[$id][idx];
-          $$ = new LoadVector($id, $ats, idx, val, true);
-     } else {
-          $$ = new LoadVector($id, $ats, idx, 0, false);
+          $$ = new LoadVector($id, $ats, idx, val, true, reads);
+     }
+     else {
+          $$ = new LoadVector($id, $ats, idx, 0, false, reads);
      }
 }
 
@@ -404,6 +412,63 @@ atstring : IDENT[id] {
 
 atstring : INTEGER[int] {
      $$ = new ConstInteger($int);
+}
+
+atstring : '=' {
+     $$ = new ConstString("=");
+}
+
+atstring : '@' {
+     $$ = new ConstString("@");
+}
+
+atstring : ';' {
+     $$ = new ConstString(";");
+}
+
+atstring : ':' {
+     $$ = new ConstString(":");
+}
+
+
+atstring : '(' {
+     $$ = new ConstString("(");
+}
+
+atstring : ')' {
+     $$ = new ConstString(")");
+}
+
+atstring : '{' {
+     $$ = new ConstString("{");
+}
+
+atstring : '}' {
+     $$ = new ConstString("}");
+}
+
+atstring : '[' {
+     $$ = new ConstString("[");
+}
+
+atstring : ']' {
+     $$ = new ConstString("]");
+}
+
+atstring : '+' {
+     $$ = new ConstString("+");
+}
+
+atstring : '-' {
+     $$ = new ConstString("-");
+}
+
+atstring : '*' {
+     $$ = new ConstString("*");
+}
+
+atstring : '/' {
+     $$ = new ConstString("/");
 }
          
 indice : IDENT[id] {
@@ -459,12 +524,10 @@ factor : IDENT[id] {
         if (memory_string.count($id)) {
              $$ = new Load($id, memory_string[$id], true);
         }
-        /* --- CORREÇÃO: ADICIONAR ESTE BLOCO QUE FALTOU --- */
         else if (memory_float.count($id)) {
              double val = memory_float[$id];
              $$ = new Load($id, val, true);
         }
-        /* ------------------------------------------------ */
         else if (memory_int.count($id)) {
              $$ = new Load($id, memory_int[$id], true);
         } 
