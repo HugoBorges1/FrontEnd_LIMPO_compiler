@@ -19,9 +19,12 @@ std::map<std::string, bool> memory_bool;
 std::map<std::string, std::map<int, bool>> memory_vector_bool;
 
 std::map<std::string, int> read_counts;
+std::map<std::string, int> loop_change_counts;
 
 std::set<std::string> declared_vars;
 std::set<std::string> declared_floats;
+
+int inside_loop = 0;
 
 %}
 
@@ -34,7 +37,7 @@ std::set<std::string> declared_floats;
 %token<name> IDENT
 
 %type<node> stmts stmt atrib arit expr term factor prog atstring decl if loop comblock exprlog termlog faclog perexpr
-%type<node> show varshow rdexpr rditem read indice comp val showITM showLST
+%type<node> show varshow rdexpr rditem read indice comp val showITM showLST safeblock
 %type<name> tpvar cmpl
 
 %start prog
@@ -130,17 +133,32 @@ atrib : IDENT[id] '=' arit[at] {
           int val = $at->getIntValue(); 
           memory_int[$id] = val;
      }
+
+     if (inside_loop > 0) {
+          loop_change_counts[$id]++;
+     }
+
      $$ = new Store($id, $at);
 }
 
 atrib : IDENT[id] '=' BOOL_T {
      memory_bool[$id] = true; 
-     $$ = new Store($id,  new ConstBoolean(true));
+     
+     if (inside_loop > 0) {
+          loop_change_counts[$id]++;
+     }
+
+     $$ = new Store($id, new ConstBoolean(true));
 }
 
 atrib : IDENT[id] '=' BOOL_F {
      memory_bool[$id] = false; 
-     $$ = new Store($id,  new ConstBoolean(false));
+     
+     if (inside_loop > 0) {
+          loop_change_counts[$id]++;
+     }
+
+     $$ = new Store($id, new ConstBoolean(false));
 }
 
 atrib : IDENT[id] ']'indice[idx]'[' '=' arit[at] {
@@ -161,11 +179,21 @@ atrib : IDENT[id] ']'indice[idx]'[' '=' arit[at] {
           memory_vector_int[$id][indexVal] = intVal;
           $$ = new StoreVector($id, $idx, $at, indexVal, true);
      }
+
+     if (inside_loop > 0) {
+          loop_change_counts[$id]++;
+     }
+     $$ = new StoreVector($id, $idx, $at, indexVal, true);
 }
 
 atrib : IDENT[id] ']'indice[idx]'[' '=' BOOL_T {
      int indexVal = $idx->getIntValue();
      memory_vector_bool[$id][indexVal] = true;
+
+     if (inside_loop > 0) {
+          loop_change_counts[$id]++;
+     }
+     
      $$ = new StoreVector($id, $idx, new ConstBoolean(true), indexVal, true);
 }
 
@@ -173,18 +201,25 @@ atrib : IDENT[id] ']'indice[idx]'[' '=' BOOL_T {
 atrib : IDENT[id] ']'indice[idx]'[' '=' BOOL_F {
      int indexVal = $idx->getIntValue();
      memory_vector_bool[$id][indexVal] = false;
-     $$ = new StoreVector($id, $idx, new ConstBoolean(false), indexVal, true);
-}  
 
-loop : LOOP_S INTEGER[lim] ':' DECL_IT IDENT[id] ICR LOOP_E '|' comblock[bc] '|' {
-     $$ = new ForStmt($id, $lim, $bc);
+     if (inside_loop > 0) {
+          loop_change_counts[$id]++;
+     }
+     
+     $$ = new StoreVector($id, $idx, new ConstBoolean(false), indexVal, true);
+} 
+
+safeblock : { inside_loop++; } comblock[bc] { inside_loop--; $$ = $bc; } ;
+
+loop : LOOP_S INTEGER[lim] ':' DECL_IT IDENT[id] ICR LOOP_E '|' safeblock[bc] '|' {
+     $$ = new ForStmt($lim, $id, $bc);
 }
 
-loop : LOOP_S exprlog[exl] LOOP_E '|' comblock[bc] '|' {
+loop : LOOP_S exprlog[exl] LOOP_E '|' safeblock[bc] '|' {
      $$ = new LoopStmt($exl, $bc);
 }
 
-loop : LOOP_S exprlog[cond] LOOP_E '|' comblock[bc] LOOP_P '|' {
+loop : LOOP_S exprlog[cond] LOOP_E '|' safeblock[bc] LOOP_P '|' {
      $$ = new LoopStmt($cond, $bc);
 }
 
@@ -275,21 +310,21 @@ val : FLOAT[f] {
 
 val : IDENT[id] { 
     int reads = read_counts[$id];
+    int loops = loop_change_counts[$id];
     
     if (declared_vars.count($id)) {
         if (memory_int.count($id)) {
-            
-             $$ = new Load($id, memory_int[$id], true, reads);
+             $$ = new Load($id, memory_int[$id], true, reads, loops);
         }
         else if (memory_float.count($id)) {
              double val = memory_float[$id];
-             $$ = new Load($id, val, true, reads); 
+             $$ = new Load($id, val, true, reads, loops); 
         } 
         else if (memory_int.count($id)) {
-             $$ = new Load($id, memory_int[$id], true, reads);
+             $$ = new Load($id, memory_int[$id], true, reads, loops);
         } 
         else {
-             $$ = new Load($id);
+             $$ = new Load($id, 0, false, reads, loops);
         }
     } 
     else {
@@ -359,35 +394,35 @@ showITM : varshow[var] {
 
 varshow : '%' IDENT[id] '\\' {
      int reads = read_counts[$id]; 
+     int loops = loop_change_counts[$id];
 
      if (memory_string.count($id)) {
-
-          $$ = new Load($id, memory_string[$id], true, reads);
+          $$ = new Load($id, memory_string[$id], true, reads, loops);
      }
      else if (memory_float.count($id)) {
           double val = memory_float[$id];
-          $$ = new Load($id, val, true, reads);
+          $$ = new Load($id, val, true, reads, loops);
      }
      else if (memory_int.count($id)) {
-          $$ = new Load($id, memory_int[$id], true, reads);
+          $$ = new Load($id, memory_int[$id], true, reads, loops);
      } 
      else if (memory_bool.count($id)) {
           bool val = memory_bool[$id];
-          $$ = new Load($id, val, true, reads);
+          $$ = new Load($id, val, true, reads, loops);
      }
      else {
-
-          $$ = new Load($id, 0, false, reads);
+          $$ = new Load($id, 0, false, reads, loops);
      }
 }
 
 varshow : '%' IDENT[id] ']' atstring[ats] '[' '\\' {
      int idx = $ats->getIntValue();
      int reads = read_counts[$id];
+     int loops = loop_change_counts[$id];
 
      if (memory_vector_string.count($id) && memory_vector_string[$id].count(idx)) {
           string val = memory_vector_string[$id][idx];
-          $$ = new LoadVector($id, $ats, idx, val, true, reads);
+          $$ = new LoadVector($id, $ats, idx, val, true, reads, loops);
      }
      else if (memory_vector_int.count($id) && memory_vector_int[$id].count(idx)) {
           int val = memory_vector_int[$id][idx];
@@ -395,14 +430,14 @@ varshow : '%' IDENT[id] ']' atstring[ats] '[' '\\' {
      }
      else if (memory_vector_float.count($id) && memory_vector_float[$id].count(idx)) {
           double val = memory_vector_float[$id][idx];
-          $$ = new LoadVector($id, $ats, idx, val, true, reads);
+          $$ = new LoadVector($id, $ats, idx, val, true, reads, loops);
      }
      else if (memory_vector_bool.count($id) && memory_vector_bool[$id].count(idx)) {
           bool val = memory_vector_bool[$id][idx];
-          $$ = new LoadVector($id, $ats, idx, val, true, reads);
+          $$ = new LoadVector($id, $ats, idx, val, true, reads, loops);
      }
      else {
-          $$ = new LoadVector($id, $ats, idx, 0, false, reads);
+          $$ = new LoadVector($id, $ats, idx, 0, false, reads, loops);
      }
 }
 
@@ -520,13 +555,16 @@ factor : INTEGER[int]{
 }
 
 factor : IDENT[id] {
-    if (declared_vars.count($id)) {
+     int reads = read_counts[$id];
+     int loops = loop_change_counts[$id];
+
+     if (declared_vars.count($id)) {
         if (memory_string.count($id)) {
-             $$ = new Load($id, memory_string[$id], true);
+             $$ = new Load($id, memory_string[$id], true, reads);
         }
         else if (memory_float.count($id)) {
              double val = memory_float[$id];
-             $$ = new Load($id, val, true);
+             $$ = new Load($id, val, true, reads, loops);
         }
         else if (memory_int.count($id)) {
              $$ = new Load($id, memory_int[$id], true);
@@ -542,21 +580,23 @@ factor : IDENT[id] {
        
 factor : IDENT[id] ']'indice[idx]'[' {
      int indexVal = $idx->getIntValue();
+     int reads = read_counts[$id];
+     int loops = loop_change_counts[$id];
      
      if (memory_vector_string.count($id) && memory_vector_string[$id].count(indexVal)) {
           string val = memory_vector_string[$id][indexVal];
-          $$ = new LoadVector($id, $idx, indexVal, val, true);
+          $$ = new LoadVector($id, $idx, indexVal, val, true, reads, loops);
      }
      else if (memory_vector_float.count($id) && memory_vector_float[$id].count(indexVal)) {
           double val = memory_vector_float[$id][indexVal];
-          $$ = new LoadVector($id, $idx, indexVal, val, true);
+          $$ = new LoadVector($id, $idx, indexVal, val, true, reads, loops);
      }
      else if (memory_vector_int.count($id) && memory_vector_int[$id].count(indexVal)) {
           int val = memory_vector_int[$id][indexVal];
-          $$ = new LoadVector($id, $idx, indexVal, val, true);
+          $$ = new LoadVector($id, $idx, indexVal, val, true, reads, loops);
      } 
      else {
-          $$ = new LoadVector($id, $idx);
+          $$ = new LoadVector($id, $idx, reads, loops);
      }
 }
 
