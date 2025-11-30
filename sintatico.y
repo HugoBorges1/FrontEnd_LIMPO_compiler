@@ -325,20 +325,25 @@ val : FLOAT[f] {
 val : IDENT[id] { 
     int reads = read_counts[$id];
     int loops = loop_change_counts[$id];
-    
+    int ifs = if_change_counts[$id]; 
+
     if (declared_vars.count($id)) {
-        if (memory_int.count($id)) {
-             $$ = new Load($id, memory_int[$id], true, reads, loops);
+        if (memory_string.count($id)) {
+             $$ = new Load($id, memory_string[$id], true, reads, loops, ifs);
         }
         else if (memory_float.count($id)) {
              double val = memory_float[$id];
-             $$ = new Load($id, val, true, reads, loops); 
+             $$ = new Load($id, val, true, reads, loops, ifs); 
         } 
         else if (memory_int.count($id)) {
-             $$ = new Load($id, memory_int[$id], true, reads, loops);
+             $$ = new Load($id, memory_int[$id], true, reads, loops, ifs);
         } 
+        else if (memory_bool.count($id)) {
+             bool val = memory_bool[$id];
+             $$ = new Load($id, val, true, reads, loops, ifs);
+        }
         else {
-             $$ = new Load($id, 0, false, reads, loops);
+             $$ = new Load($id, 0, false, reads, loops, ifs);
         }
     } 
     else {

@@ -8,7 +8,7 @@ st var_string
 st var_string_vet ]10[
 
 SH {Insira o valor das variaveis} OW
-RE {it@var_int ft@var_float bl@var_bool st@var_string} AD
+RE {it@var_int ft@var_float st@var_string} AD
 
 var_int_vet ]0[ = 15
 var_int_vet ]1[ = 25
@@ -20,13 +20,13 @@ var_float_vet ]1[ = 8;39
 
 var_float_vet ]2[ = var_float_vet ]0[ / var_float_vet ]1[
 
-var_string_vet ]10[ = umafrase
+var_string_vet ]9[ = umafrase
 var_bool = NOTTHETRUTH
 
 var_bool_vet ]0[ = NOTTHETRUTH
 var_bool_vet ]1[ = NOTTHELIES
 
-I (var_int MAIOR_QUE var_int_vet ]2[) OU ((var_float MENOR_QUE var_float_vet ]2[) E (var_string IGUAL_A var_string_vet ]10[)) F |
+I (var_int MAIOR_QUE var_int_vet ]2[) OU ((var_float MENOR_QUE var_float_vet ]2[) E (var_string IGUAL_A var_string_vet ]9[)) F |
 	var_bool_vet ]0[ = NOTTHELIES
 	var_bool_vet ]1[ = NOTTHETRUTH 
 | EL var_bool = NOTTHELIES SE
@@ -40,6 +40,6 @@ LO var_float_vet ]2[ DIFERENTE_DE 4501;29 OP |
 	PARE
 |
 
-SH {Valor dos vetores manipulados %var_int_vet ]2[\ %var_float_vet ]2[\ %var_string_vet]10[\ %var_bool_vet ]0[\ %var_bool_vet ]1[\ 
+SH {Valor dos vetores manipulados %var_int_vet ]2[\ %var_float_vet ]2[\ %var_string_vet]9[\ %var_bool_vet ]0[\ %var_bool_vet ]1[\ 
 valor dos vetores nao alterados %var_bool_vet ]0[\ %var_bool_vet ]1[\ %var_int_vet ]0[\ %var_int_vet ]1[\ %var_float_vet ]0[\ %var_float_vet ]1[\ 
 valor de variaveis inseridas %var_bool\ %var_int\ %var_float\ %var_string\ } OW

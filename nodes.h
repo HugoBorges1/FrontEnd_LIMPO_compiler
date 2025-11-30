@@ -166,12 +166,13 @@ class Load: public Node {
             this->currentVal = val;
             this->hasValue = hasVal;
             this->readCount = reads;
+            this->loopChangeCount = loops;
             this->ifChangeCount = ifs;
             this->isString = false;
             this->isDouble = false;
             this->isBool = false;
             
-            if (hasVal && loopChangeCount == 0) this->append(new ConstInteger(val));
+            if (hasVal) this->append(new ConstInteger(val));
         }
 
         Load(string name, string val, bool hasVal = false, int reads = 0, int loops = 0, int ifs = 0){
@@ -179,12 +180,13 @@ class Load: public Node {
             this->currentStr = val;
             this->hasValue = hasVal;
             this->readCount = reads;
+            this->loopChangeCount = loops;
             this->ifChangeCount = ifs;
             this->isString = true;
             this->isDouble = false;
             this->isBool = false;
 
-            if (hasVal && loopChangeCount == 0) this->append(new ConstString(val));
+            if (hasVal) this->append(new ConstString(val));
         }
 
         Load(string name, double val, bool hasVal = false, int reads = 0, int loops = 0, int ifs = 0){
@@ -192,25 +194,27 @@ class Load: public Node {
             this->currentDouble = val;
             this->hasValue = hasVal;
             this->readCount = reads;
+            this->loopChangeCount = loops;
             this->ifChangeCount = ifs;
             this->isString = false;
             this->isDouble = true; 
             this->isBool = false;
 
-            if (hasVal && loopChangeCount == 0) this->append(new ConstDouble(val));
+            if (hasVal) this->append(new ConstDouble(val));
         }
 
-        Load(string name, bool val, bool hasVal = false, int loops = 0, int ifs = 0){
+        Load(string name, bool val, bool hasVal = false, int reads = 0, int loops = 0, int ifs = 0){
             this->name = name;
             this->currentBool = val;
             this->hasValue = hasVal;
+            this->readCount = reads;
             this->loopChangeCount = loops;
             this->ifChangeCount = ifs;
             this->isString = false;
             this->isDouble = false;
             this->isBool = true;
 
-            if (hasVal && loopChangeCount == 0) this->append(new ConstBoolean(val));
+            if (hasVal) this->append(new ConstBoolean(val));
         }
 
     string astLabel() override {
@@ -365,7 +369,7 @@ class LoadVector: public Node {
             this->isString = false;
             this->isBool = false;
             
-            if (info && loopChangeCount == 0) this->append(new ConstInteger(val));
+            if (info) this->append(new ConstInteger(val));
         }
 
         LoadVector(string name, Node *index, int idxVal, string val, bool info, int reads = 0, int loops = 0, int ifs = 0){
@@ -379,7 +383,7 @@ class LoadVector: public Node {
             this->isString = true;
             this->isBool = false;
 
-            if (info && loopChangeCount == 0) this->append(new ConstString(val));
+            if (info) this->append(new ConstString(val));
         }
 
         LoadVector(string name, Node *index, int idxVal, double val, bool info, int reads = 0, int loops = 0, int ifs = 0){
@@ -394,7 +398,7 @@ class LoadVector: public Node {
             this->isBool = false;
             this->isDouble = true;
             
-            if (info && loopChangeCount == 0) this->append(new ConstDouble(val));
+            if (info) this->append(new ConstDouble(val));
         }
 
         LoadVector(string name, Node *index, int idxVal, bool val, bool info, int loops = 0, int ifs = 0){
@@ -407,7 +411,7 @@ class LoadVector: public Node {
             this->isBool = true; 
             this->hasInfo = info;
 
-            if (info && loopChangeCount == 0) this->append(new ConstBoolean(val));
+            if (info) this->append(new ConstBoolean(val));
         }
 
         string astLabel() override {
