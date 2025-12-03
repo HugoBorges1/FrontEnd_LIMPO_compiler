@@ -104,6 +104,8 @@ class ConstDouble: public Node {
         double getDoubleValue() override { 
             return value; 
         }
+
+        int getIntValue() override { return (int)value; }
 };
 
 class ConstBoolean: public Node {
@@ -776,22 +778,40 @@ private:
     map<string, int> declaredArraySizes; 
 
     string inferType(Node* n) {
+        // Tipos base
         if (dynamic_cast<ConstBoolean*>(n)) return "bool";
         if (dynamic_cast<ConstInteger*>(n)) return "int";
         if (dynamic_cast<ConstDouble*>(n)) return "float";
         if (dynamic_cast<ConstString*>(n)) return "string";
         if (dynamic_cast<CompOp*>(n)) return "bool";
 
+        // Inferência recursiva para Operações Binárias (+, -, *, /)
         if (dynamic_cast<BinaryOp*>(n)) {
-            return "expr"; 
+            BinaryOp* bin = dynamic_cast<BinaryOp*>(n);
+            // Verifica os dois lados da operação
+            string leftType = inferType(bin->getChildren()[0]);
+            string rightType = inferType(bin->getChildren()[1]);
+
+            // Se qualquer lado for string, o resultado é string (concatenação)
+            if (leftType == "string" || rightType == "string") return "string";
+            
+            // Se qualquer lado for float, o resultado da expressão é float
+            if (leftType == "float" || rightType == "float") return "float";
+            
+            // Se ambos forem int, continua int
+            if (leftType == "int" && rightType == "int") return "int";
+            
+            return "unknown";
         }
 
+        // Variáveis Simples
         Load* load = dynamic_cast<Load*>(n);
         if (load) {
             if (declaredVars.count(load->getName())) return declaredVars[load->getName()];
             return "unknown";
         }
 
+        // Vetores
         LoadVector* loadVec = dynamic_cast<LoadVector*>(n);
         if (loadVec) {
             if (declaredVars.count(loadVec->getName())) return declaredVars[loadVec->getName()];
@@ -800,7 +820,6 @@ private:
 
         return "unknown";
     }
-
     bool containsNonStringVariables(Node* n) {
         Load* load = dynamic_cast<Load*>(n);
         if (load) {
@@ -886,20 +905,31 @@ public:
                 cerr << "Erro Semantico (Linha " << store->getLineNo() << "): Tentativa de atribuir valor a '" << varName << "' que nao foi declarada.\n";
             } else {
                 string varType = declaredVars[varName];
+                
+                // Pega a expressão que está sendo atribuída
+                Node* expr = (!store->getChildren().empty()) ? store->getChildren()[0] : NULL;
+
+                // --- LÓGICA DE COERÇÃO INT <---
+                if (varType == "int" && expr != NULL) {
+                    string exprType = inferType(expr);
+                    if (exprType == "float") {
+                        cerr << "Warning (Linha " << store->getLineNo() << "): "
+                             << "Atribuicao de float para a variavel inteira '" << varName 
+                             << "'. O valor sera truncado.\n";
+                        // O truncamento ocorre automaticamente na execução do C++ ao salvar em int
+                    }
+                }
+                // ------------------------------
 
                 if (varType == "string") {
-                    if (!store->getChildren().empty()) {
-                        Node* expr = store->getChildren()[0];
-                        if (containsNonStringVariables(expr)) {
-                            cerr << "Erro Semantico (Linha " << store->getLineNo() << "): "
-                                 << "Variavel string '" << varName << "' nao pode receber variaveis de outros tipos (apenas strings ou literais).\n";
-                        }
+                    if (expr && containsNonStringVariables(expr)) {
+                        cerr << "Erro Semantico (Linha " << store->getLineNo() << "): "
+                             << "Variavel string '" << varName << "' nao pode receber variaveis de outros tipos.\n";
                     }
                 }
 
                 else if (varType == "bool" || varType == "boolean" || varType == "bl") {
-                    if (!store->getChildren().empty()) {
-                        Node* expr = store->getChildren()[0];
+                    if (expr) {
                         string exprType = inferType(expr);
                         if (exprType != "bool") {
                             cerr << "Erro Semantico (Linha " << store->getLineNo() << "): "
@@ -913,10 +943,12 @@ public:
         StoreVector *storeVec = dynamic_cast<StoreVector*>(n);
         if (storeVec != NULL){
             string varName = storeVec->getName();
+            
             if (declaredVars.count(varName) == 0) {
                 cerr << "Erro: Tentativa de atribuir em array '" << varName << "' nao declarado.\n";
             } else {
-                if (declaredArraySizes.count(varName)) {
+                // 1. Verificação de Limites (Bounds Checking) - MANTIDO IGUAL
+                if (declaredArraySizes.count(varName) > 0) {
                     int size = declaredArraySizes[varName];
                     int idx = storeVec->getIndex();
                     if (idx < 0 || idx >= size) {
@@ -927,18 +959,34 @@ public:
 
                 string varType = declaredVars[varName];
 
-                if (varType == "string") {
-                    if (!storeVec->getChildren().empty()) {
-                        Node* expr = storeVec->getChildren()[0];
+                // 2. Extraímos a expressão para não repetir código
+                Node* expr = (!storeVec->getChildren().empty()) ? storeVec->getChildren()[0] : NULL;
+
+                // --- NOVA IMPLEMENTAÇÃO: Coerção Float -> Int ---
+                if (varType == "int" && expr != NULL) {
+                    string exprType = inferType(expr);
+                    
+                    if (exprType == "float") {
+                        cerr << "Warning (Linha " << storeVec->getLineNo() << "): "
+                             << "Atribuicao de float para o vetor de inteiros '" << varName 
+                             << "'. O valor sera truncado.\n";
+                    }
+                }
+                // ------------------------------------------------
+
+                // 3. Verificações de String (Erro)
+                else if (varType == "string") {
+                    if (expr != NULL) {
                         if (containsNonStringVariables(expr)) {
                             cerr << "Erro Semantico (Linha " << storeVec->getLineNo() << "): "
                                  << "Vetor string '" << varName << "' nao pode receber variaveis de outros tipos.\n";
                         }
                     }
                 }
+                
+                // 4. Verificações de Boolean (Erro)
                 else if (varType == "bool" || varType == "boolean" || varType == "bl") {
-                    if (!storeVec->getChildren().empty()) {
-                        Node* expr = storeVec->getChildren()[0];
+                    if (expr != NULL) {
                         string exprType = inferType(expr);
                         if (exprType != "bool") {
                             cerr << "Erro Semantico (Linha " << storeVec->getLineNo() << "): "

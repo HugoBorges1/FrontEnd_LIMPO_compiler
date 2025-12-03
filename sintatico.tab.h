@@ -91,7 +91,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 52 "sintatico.y"
+#line 53 "sintatico.y"
 
      int integer;
      float flt;

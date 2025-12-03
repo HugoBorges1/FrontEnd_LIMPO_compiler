@@ -29,6 +29,7 @@ std::map<std::string, int> if_change_counts;
 
 std::set<std::string> declared_vars;
 std::set<std::string> declared_floats; 
+std::set<std::string> declared_strings;
 
 int inside_loop = 0;
 int inside_if = 0;
@@ -92,6 +93,7 @@ decl : DECL_IT IDENT[name] ']' INTEGER[size] '[' {
 
 decl : DECL_ST IDENT[name] ']' INTEGER[size] '[' {
      declared_vars.insert($name);
+     declared_strings.insert($name);
      $$ = new VectorDecl($name, $size, "string");
 }
 
@@ -124,28 +126,31 @@ decl : DECL_BL IDENT[name] {
 
 decl : DECL_ST IDENT[name] {
      declared_vars.insert($name);
+     declared_strings.insert($name);
      $$ = new VarDecl($name, "string");
 }
 
 atrib : IDENT[id] '=' arit[at] {
-     string sVal = $at->getStringValue();
-     
+     // A lógica antiga confiava apenas no valor. A nova confia na DECLARAÇÃO.
      if (inside_loop == 0 && inside_if == 0) {
-          if (sVal != "") {
-               memory_string[$id] = sVal;
+          if (declared_strings.count($id)) {
+               // É String: Pega o valor texto
+               memory_string[$id] = $at->getStringValue();
           } 
           else if (declared_floats.count($id)) {
-               double val = $at->getDoubleValue();
-               memory_float[$id] = val;
+               // É Float: Pega o valor double
+               memory_float[$id] = $at->getDoubleValue();
           }
           else {
-               int val = $at->getIntValue();
-               memory_int[$id] = val;
+               // É Int (padrão): Força truncamento (Coerção)
+               // Usamos getDoubleValue() e castamos para int para somar com precisão antes de truncar
+               // Ex: 1.5 + 1.5 = 3.0 -> 3 (Se usasse getIntValue direto, seria 1 + 1 = 2)
+               memory_int[$id] = (int)$at->getDoubleValue(); 
           }
      }
 
      $$ = new Store($id, $at);
-
+     
      if (inside_loop > 0) {
           loop_change_counts[$id]++;
      }
