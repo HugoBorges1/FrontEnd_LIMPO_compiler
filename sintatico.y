@@ -7,6 +7,8 @@
 int yyerror(const char *s);
 int yylex(void);
 
+extern int errorcount;
+
 std::map<std::string, int> memory_int;
 std::map<std::string, std::map<int, int>> memory_vector_int;
 
@@ -60,21 +62,33 @@ int inside_if = 0;
 %%
 
 prog : stmts {    
-     Program pg($stmts);
-     pg.printAST();
+     if (yynerrs == 0 && errorcount == 0) {
+          Program pg($stmts);
+          pg.printAST();
 
-     SemanticVarDecl vd;
-     vd.check(&pg);
-     vd.printFoundVars();
-}                          
+          SemanticVarDecl vd;
+          vd.check(&pg);
+          vd.printFoundVars();
+     }
+}                        
 
 stmts : stmts[ss] stmt {
      $ss->append($stmt);
      $$ = $ss;
 }
 
+stmts : stmts error { 
+     yyerrok;    
+     yyclearin;  
+     $$ = $1;    
+}
 stmts : stmt {
      $$ = new Stmts($stmt);
+}
+stmts : error {
+     yyerrok;
+     yyclearin; 
+     $$ = new Stmts(new Node()); 
 }
 
 stmt : atrib

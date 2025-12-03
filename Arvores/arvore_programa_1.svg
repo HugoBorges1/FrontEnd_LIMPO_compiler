@@ -1,0 +1,264 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1295pt" height="476pt" viewBox="0.00 0.00 1295.00 476.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 472)">
+<polygon fill="white" stroke="none" points="-4,4 -4,-472 1291.14,-472 1291.14,4 -4,4"/>
+<!-- N140720828121224 -->
+<g id="node1" class="node">
+<title>N140720828121224</title>
+<ellipse fill="none" stroke="black" cx="637.77" cy="-450" rx="44.29" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="637.77" y="-445.8" font-family="Times,serif" font-size="14.00">Program</text>
+</g>
+<!-- N95264689841680 -->
+<g id="node2" class="node">
+<title>N95264689841680</title>
+<ellipse fill="none" stroke="black" cx="637.77" cy="-378" rx="33.04" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="637.77" y="-373.8" font-family="Times,serif" font-size="14.00">Stmts</text>
+</g>
+<!-- N140720828121224&#45;&#45;N95264689841680 -->
+<g id="edge1" class="edge">
+<title>N140720828121224--N95264689841680</title>
+<path fill="none" stroke="black" d="M637.77,-431.7C637.77,-420.85 637.77,-406.92 637.77,-396.1"/>
+</g>
+<!-- N95264689841552 -->
+<g id="node3" class="node">
+<title>N95264689841552</title>
+<ellipse fill="none" stroke="black" cx="132.77" cy="-306" rx="132.77" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="132.77" y="-301.8" font-family="Times,serif" font-size="14.00">DeclVector int: vetor_media]3[</text>
+</g>
+<!-- N95264689841680&#45;&#45;N95264689841552 -->
+<g id="edge2" class="edge">
+<title>N95264689841680--N95264689841552</title>
+<path fill="none" stroke="black" d="M605.8,-372.57C530.13,-362.08 337.83,-335.42 223.07,-319.52"/>
+</g>
+<!-- N95264689841952 -->
+<g id="node4" class="node">
+<title>N95264689841952</title>
+<ellipse fill="none" stroke="black" cx="375.77" cy="-306" rx="92.55" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="375.77" y="-301.8" font-family="Times,serif" font-size="14.00">DeclVar float: media</text>
+</g>
+<!-- N95264689841680&#45;&#45;N95264689841952 -->
+<g id="edge3" class="edge">
+<title>N95264689841680--N95264689841952</title>
+<path fill="none" stroke="black" d="M608.48,-369.17C565.08,-357.58 483.01,-335.65 428.86,-321.18"/>
+</g>
+<!-- N95264689842176 -->
+<g id="node5" class="node">
+<title>N95264689842176</title>
+<ellipse fill="none" stroke="black" cx="564.77" cy="-306" rx="78.61" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="564.77" y="-301.8" font-family="Times,serif" font-size="14.00">DeclVar int: total</text>
+</g>
+<!-- N95264689841680&#45;&#45;N95264689842176 -->
+<g id="edge4" class="edge">
+<title>N95264689841680--N95264689842176</title>
+<path fill="none" stroke="black" d="M621.93,-361.81C610.27,-350.63 594.42,-335.43 582.37,-323.88"/>
+</g>
+<!-- N95264689844576 -->
+<g id="node6" class="node">
+<title>N95264689844576</title>
+<ellipse fill="none" stroke="black" cx="710.77" cy="-306" rx="49.67" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="710.77" y="-301.8" font-family="Times,serif" font-size="14.00">ForLOOP</text>
+</g>
+<!-- N95264689841680&#45;&#45;N95264689844576 -->
+<g id="edge5" class="edge">
+<title>N95264689841680--N95264689844576</title>
+<path fill="none" stroke="black" d="M653.61,-361.81C665.44,-350.47 681.58,-335 693.69,-323.38"/>
+</g>
+<!-- N95264689845248 -->
+<g id="node16" class="node">
+<title>N95264689845248</title>
+<ellipse fill="none" stroke="black" cx="881.77" cy="-306" rx="71.91" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="881.77" y="-301.8" font-family="Times,serif" font-size="14.00">StoreVar media</text>
+</g>
+<!-- N95264689841680&#45;&#45;N95264689845248 -->
+<g id="edge15" class="edge">
+<title>N95264689841680--N95264689845248</title>
+<path fill="none" stroke="black" d="M666.72,-368.7C708.5,-356.71 786.14,-334.43 835.81,-320.19"/>
+</g>
+<!-- N95264689846224 -->
+<g id="node20" class="node">
+<title>N95264689846224</title>
+<ellipse fill="none" stroke="black" cx="1049.77" cy="-306" rx="33.04" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1049.77" y="-301.8" font-family="Times,serif" font-size="14.00">Show</text>
+</g>
+<!-- N95264689841680&#45;&#45;N95264689846224 -->
+<g id="edge19" class="edge">
+<title>N95264689841680--N95264689846224</title>
+<path fill="none" stroke="black" d="M669.2,-372.21C727.28,-363.28 855.29,-343.26 962.77,-324 981.56,-320.63 1002.55,-316.54 1019.22,-313.21"/>
+</g>
+<!-- N95264689844624 -->
+<g id="node7" class="node">
+<title>N95264689844624</title>
+<ellipse fill="none" stroke="black" cx="482.77" cy="-234" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="482.77" y="-229.8" font-family="Times,serif" font-size="14.00">3</text>
+</g>
+<!-- N95264689844576&#45;&#45;N95264689844624 -->
+<g id="edge6" class="edge">
+<title>N95264689844576--N95264689844624</title>
+<path fill="none" stroke="black" d="M673.06,-293.81C666.31,-291.85 659.34,-289.84 652.77,-288 593.4,-271.33 576.66,-273.25 518.77,-252 513.84,-250.19 508.66,-247.96 503.82,-245.71"/>
+</g>
+<!-- N95264689844672 -->
+<g id="node8" class="node">
+<title>N95264689844672</title>
+<ellipse fill="none" stroke="black" cx="593.77" cy="-234" rx="65.73" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="593.77" y="-229.8" font-family="Times,serif" font-size="14.00">DeclVar int: a</text>
+</g>
+<!-- N95264689844576&#45;&#45;N95264689844672 -->
+<g id="edge7" class="edge">
+<title>N95264689844576--N95264689844672</title>
+<path fill="none" stroke="black" d="M685.67,-289.98C666.33,-278.41 639.67,-262.46 620.05,-250.72"/>
+</g>
+<!-- N95264689843104 -->
+<g id="node9" class="node">
+<title>N95264689843104</title>
+<ellipse fill="none" stroke="black" cx="710.77" cy="-234" rx="33.04" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="710.77" y="-229.8" font-family="Times,serif" font-size="14.00">Stmts</text>
+</g>
+<!-- N95264689844576&#45;&#45;N95264689843104 -->
+<g id="edge8" class="edge">
+<title>N95264689844576--N95264689843104</title>
+<path fill="none" stroke="black" d="M710.77,-287.7C710.77,-276.85 710.77,-262.92 710.77,-252.1"/>
+</g>
+<!-- N95264689843024 -->
+<g id="node10" class="node">
+<title>N95264689843024</title>
+<ellipse fill="none" stroke="black" cx="553.77" cy="-162" rx="30.88" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="553.77" y="-157.8" font-family="Times,serif" font-size="14.00">Read</text>
+</g>
+<!-- N95264689843104&#45;&#45;N95264689843024 -->
+<g id="edge9" class="edge">
+<title>N95264689843104--N95264689843024</title>
+<path fill="none" stroke="black" d="M685.89,-221.91C656.24,-208.69 607.02,-186.74 577.76,-173.7"/>
+</g>
+<!-- N95264689844464 -->
+<g id="node12" class="node">
+<title>N95264689844464</title>
+<ellipse fill="none" stroke="black" cx="694.77" cy="-162" rx="65.47" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="694.77" y="-157.8" font-family="Times,serif" font-size="14.00">StoreVar total</text>
+</g>
+<!-- N95264689843104&#45;&#45;N95264689844464 -->
+<g id="edge11" class="edge">
+<title>N95264689843104--N95264689844464</title>
+<path fill="none" stroke="black" d="M706.82,-215.7C704.34,-204.85 701.15,-190.92 698.68,-180.1"/>
+</g>
+<!-- N95264689842800 -->
+<g id="node11" class="node">
+<title>N95264689842800</title>
+<ellipse fill="none" stroke="black" cx="499.77" cy="-90" rx="176.74" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="499.77" y="-85.8" font-family="Times,serif" font-size="14.00">ReadVector (int) vetor_media ]LoadVar a[</text>
+</g>
+<!-- N95264689843024&#45;&#45;N95264689842800 -->
+<g id="edge10" class="edge">
+<title>N95264689843024--N95264689842800</title>
+<path fill="none" stroke="black" d="M541.52,-145.12C533.05,-134.14 521.8,-119.56 513.11,-108.29"/>
+</g>
+<!-- N95264689844352 -->
+<g id="node13" class="node">
+<title>N95264689844352</title>
+<ellipse fill="none" stroke="black" cx="721.77" cy="-90" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="721.77" y="-85.8" font-family="Times,serif" font-size="14.00">+</text>
+</g>
+<!-- N95264689844464&#45;&#45;N95264689844352 -->
+<g id="edge12" class="edge">
+<title>N95264689844464--N95264689844352</title>
+<path fill="none" stroke="black" d="M701.45,-143.7C705.69,-132.68 711.16,-118.5 715.36,-107.62"/>
+</g>
+<!-- N95264689843488 -->
+<g id="node14" class="node">
+<title>N95264689843488</title>
+<ellipse fill="none" stroke="black" cx="578.77" cy="-18" rx="64.93" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="578.77" y="-13.8" font-family="Times,serif" font-size="14.00">LoadVar total</text>
+</g>
+<!-- N95264689844352&#45;&#45;N95264689843488 -->
+<g id="edge13" class="edge">
+<title>N95264689844352--N95264689843488</title>
+<path fill="none" stroke="black" d="M700.36,-78.52C676.37,-66.77 637.24,-47.62 609.87,-34.22"/>
+</g>
+<!-- N95264689844192 -->
+<g id="node15" class="node">
+<title>N95264689844192</title>
+<ellipse fill="none" stroke="black" cx="864.77" cy="-18" rx="202.81" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="864.77" y="-13.8" font-family="Times,serif" font-size="14.00">LoadVector vetor_media ]0[ | changedByRead(1)</text>
+</g>
+<!-- N95264689844352&#45;&#45;N95264689844192 -->
+<g id="edge14" class="edge">
+<title>N95264689844352--N95264689844192</title>
+<path fill="none" stroke="black" d="M743.18,-78.52C766.01,-67.35 802.53,-49.47 829.59,-36.22"/>
+</g>
+<!-- N95264689845056 -->
+<g id="node17" class="node">
+<title>N95264689845056</title>
+<ellipse fill="none" stroke="black" cx="896.77" cy="-234" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="896.77" y="-229.8" font-family="Times,serif" font-size="14.00">/</text>
+</g>
+<!-- N95264689845248&#45;&#45;N95264689845056 -->
+<g id="edge16" class="edge">
+<title>N95264689845248--N95264689845056</title>
+<path fill="none" stroke="black" d="M885.48,-287.7C887.8,-276.85 890.79,-262.92 893.11,-252.1"/>
+</g>
+<!-- N95264689844864 -->
+<g id="node18" class="node">
+<title>N95264689844864</title>
+<ellipse fill="none" stroke="black" cx="917.77" cy="-162" rx="139.81" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="917.77" y="-157.8" font-family="Times,serif" font-size="14.00">LoadVar total | changedByFor(1)</text>
+</g>
+<!-- N95264689845056&#45;&#45;N95264689844864 -->
+<g id="edge17" class="edge">
+<title>N95264689845056--N95264689844864</title>
+<path fill="none" stroke="black" d="M901.86,-216.05C905.11,-205.21 909.32,-191.18 912.59,-180.28"/>
+</g>
+<!-- N95264689845008 -->
+<g id="node19" class="node">
+<title>N95264689845008</title>
+<ellipse fill="none" stroke="black" cx="1102.77" cy="-162" rx="27" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1102.77" y="-157.8" font-family="Times,serif" font-size="14.00">3</text>
+</g>
+<!-- N95264689845056&#45;&#45;N95264689845008 -->
+<g id="edge18" class="edge">
+<title>N95264689845056--N95264689845008</title>
+<path fill="none" stroke="black" d="M917.82,-222.29C922.66,-220.04 927.84,-217.81 932.77,-216 990.66,-194.75 1008.88,-201.25 1066.77,-180 1071.7,-178.19 1076.88,-175.96 1081.72,-173.71"/>
+</g>
+<!-- N95264689845440 -->
+<g id="node21" class="node">
+<title>N95264689845440</title>
+<ellipse fill="none" stroke="black" cx="977.77" cy="-234" rx="35.71" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="977.77" y="-229.8" font-family="Times,serif" font-size="14.00">Media</text>
+</g>
+<!-- N95264689846224&#45;&#45;N95264689845440 -->
+<g id="edge20" class="edge">
+<title>N95264689846224--N95264689845440</title>
+<path fill="none" stroke="black" d="M1034.15,-289.81C1022.07,-278.07 1005.43,-261.89 993.36,-250.16"/>
+</g>
+<!-- N95264689845584 -->
+<g id="node22" class="node">
+<title>N95264689845584</title>
+<ellipse fill="none" stroke="black" cx="1078.77" cy="-234" rx="47.49" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1078.77" y="-229.8" font-family="Times,serif" font-size="14.00">calculada</text>
+</g>
+<!-- N95264689846224&#45;&#45;N95264689845584 -->
+<g id="edge21" class="edge">
+<title>N95264689846224--N95264689845584</title>
+<path fill="none" stroke="black" d="M1056.79,-288.05C1061.28,-277.21 1067.1,-263.18 1071.61,-252.28"/>
+</g>
+<!-- N95264689845936 -->
+<g id="node23" class="node">
+<title>N95264689845936</title>
+<ellipse fill="none" stroke="black" cx="1215.77" cy="-234" rx="71.36" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1215.77" y="-229.8" font-family="Times,serif" font-size="14.00">LoadVar media</text>
+</g>
+<!-- N95264689846224&#45;&#45;N95264689845936 -->
+<g id="edge22" class="edge">
+<title>N95264689846224--N95264689845936</title>
+<path fill="none" stroke="black" d="M1075.35,-294.22C1103.45,-282.37 1148.78,-263.25 1180.3,-249.96"/>
+</g>
+<!-- N95264689846080 -->
+<g id="node24" class="node">
+<title>N95264689846080</title>
+<ellipse fill="none" stroke="black" cx="1215.77" cy="-162" rx="47.25" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="1215.77" y="-157.8" font-family="Times,serif" font-size="14.00">0.000000</text>
+</g>
+<!-- N95264689845936&#45;&#45;N95264689846080 -->
+<g id="edge23" class="edge">
+<title>N95264689845936--N95264689846080</title>
+<path fill="none" stroke="black" d="M1215.77,-215.7C1215.77,-204.85 1215.77,-190.92 1215.77,-180.1"/>
+</g>
+</g>
+</svg>

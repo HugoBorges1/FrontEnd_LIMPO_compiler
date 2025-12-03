@@ -582,10 +582,13 @@ class PrintSeq: public Node {
 };
 
 class Print: public Node {
-    protected:
     public:
         Print(Node *seq) {
-            this->append(seq);
+            if (seq != NULL) {
+                for (Node* child : seq->getChildren()) {
+                    this->append(child);
+                }
+            }
         }
     
     string astLabel() override {
@@ -638,15 +641,18 @@ class ReadVar: public Node {
 };
 
 class Read: public Node {
-    protected:
     public:
         Read(Node *seq) {
-            this->append(seq); 
+            if (seq != NULL) {
+                for (Node* child : seq->getChildren()) {
+                    this->append(child);
+                }
+            }
         }
     
-        string astLabel() override {
-            return "Read";
-        }
+    string astLabel() override {
+        return "Read";
+    }
 };
 
 class Stmts: public Node {

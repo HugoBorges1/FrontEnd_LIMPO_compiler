@@ -84,7 +84,10 @@ int errorcount = 0;
     return IDENT; 
 }
 
-.                       { printf("Caractere não presente no alfabeto %c\n", yytext[0] ); }
+.   { 
+        printf("Caractere não presente no alfabeto %c\n", yytext[0] ); 
+        errorcount++;
+}
 
 %%
 
